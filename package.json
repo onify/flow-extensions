@@ -1,0 +1,67 @@
+{
+  "name": "flow-extensions",
+  "version": "0.0.1",
+  "description": "Onify Flow extensions",
+  "module": "index.js",
+  "main": "dist/index.cjs",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha",
+    "posttest": "npm run dist && eslint . --cache",
+    "prepare": "npm run dist",
+    "predist": "node -e \"fs.rmdirSync('./dist/src', {recursive: true});\"",
+    "dist": "babel index.js -d dist && babel src -d dist/src",
+    "test:lcov": "c8 mocha -R dot && c8 report --reporter lcov && npm run posttest",
+    "cov:html": "c8 mocha -R dot && c8 report --reporter html"
+  },
+  "keywords": [
+    "onify",
+    "flow",
+    "bpmn",
+    "extensions"
+  ],
+  "author": {
+    "name": "Onify",
+    "url": "https://github.com/onify"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@aircall/expression-parser": "^1.0.4",
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/register": "^7.16.9",
+    "bpmn-elements": "^7.0.0",
+    "bpmn-engine": "^13.0.0",
+    "bpmn-moddle": "^7.1.2",
+    "c8": "^7.11.0",
+    "camunda-bpmn-moddle": "^6.1.2",
+    "chai": "^4.3.6",
+    "chronokinesis": "^3.1.2",
+    "debug": "^4.3.3",
+    "eslint": "^7.32.0",
+    "mocha": "^9.2.1",
+    "mocha-cakes-2": "^3.3.0",
+    "moddle-context-serializer": "^2.0.0",
+    "nock": "^13.2.4"
+  },
+  "dependencies": {
+    "cron-parser": "^4.2.1"
+  },
+  "files": [
+    "src",
+    "index.js",
+    "dist/src",
+    "dist/index.js"
+  ],
+  "c8": {
+    "exclude": [
+      "dist",
+      "test",
+      ".mocharc.cjs",
+      "babel.config.cjs"
+    ]
+  }
+}
