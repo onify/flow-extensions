@@ -3,6 +3,7 @@ import Debug from 'debug';
 import * as Elements from 'bpmn-elements';
 import * as expressions from '@aircall/expression-parser';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
+import {Engine} from 'bpmn-engine';
 import {extensions, extendoFn} from '../../index';
 import {FlowScripts} from '../../src/FlowScripts';
 import {promises as fs}  from 'fs';
@@ -15,6 +16,7 @@ export default {
   getOnifyFlow,
   Logger,
   recoverOnifyFlow,
+  getEngine,
 };
 
 function moddleContext(source, options) {
@@ -36,6 +38,17 @@ async function getOnifyFlow(source, options) {
   });
 }
 
+async function getEngine(name, source, options) {
+  return new Engine({
+    name,
+    source,
+    moddleOptions: await getModdleExtensions(),
+    extensions: {onify: extensions},
+    ...getFlowOptions(name),
+    ...options,
+  });
+}
+
 async function recoverOnifyFlow(source, state, options) {
   const moddle = await moddleContext(source, await getModdleExtensions());
   const serialized = Serializer(moddle, TypeResolver(Elements), extendoFn);
@@ -44,7 +57,6 @@ async function recoverOnifyFlow(source, state, options) {
     ...options,
   }).recover(state);
 }
-
 
 function getFlowOptions(name) {
   return {
