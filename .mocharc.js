@@ -1,5 +1,6 @@
 'use strict';
 
+process.env.TZ = "Europe/Stockholm";
 process.env.NODE_ENV = 'test';
 
 global.expect = require('chai').expect;
