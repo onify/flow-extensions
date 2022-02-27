@@ -291,7 +291,7 @@ Feature('Flow connector', () => {
     Then('an Error is thrown indicating Onify API request failed', async () => {
       const err = await errMessage;
       expect(err.content.error.code).to.equal('EFLOW_SCRIPT');
-      expect(err.content.error.message).to.match(/Cannot read property/i);
+      expect(err.content.error.message).to.match(/Cannot read proper.*? of undefined/i);
     });
   });
 
