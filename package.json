@@ -1,5 +1,5 @@
 {
-  "name": "flow-extensions",
+  "name": "@onify/flow-extensions",
   "version": "0.0.1",
   "description": "Onify Flow extensions",
   "module": "index.js",
@@ -20,6 +20,7 @@
     "onify",
     "flow",
     "bpmn",
+    "bpmn-engine",
     "extensions"
   ],
   "author": {
