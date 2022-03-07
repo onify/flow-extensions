@@ -290,30 +290,30 @@ function extendoFn(behaviour, context) {
     if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});
   }
 
-  if (!behaviour.extensionElements || !Array.isArray(behaviour.extensionElements.values)) return;
+  if (!Array.isArray(behaviour.extensionElements?.values)) return;
 
-  const inputOutput = behaviour.extensionElements.values.find(({$type}) => $type === 'camunda:InputOutput');
-  const connector = behaviour.extensionElements.values.find(({$type}) => $type === 'camunda:Connector');
+  const inputOutput = behaviour.extensionElements.values.find((el) => el.$type === 'camunda:InputOutput');
+  const connector = behaviour.extensionElements.values.find((el) => el.$type === 'camunda:Connector');
 
-  if (inputOutput) registerIOScripts(inputOutput.$type, inputOutput);
-  if (connector) registerIOScripts(connector.$type, connector.inputOutput);
+  if (inputOutput) registerIOScripts(behaviour.id, context, inputOutput.$type, inputOutput);
+  if (connector) registerIOScripts(behaviour.id, context, connector.$type, connector.inputOutput);
+}
 
-  function registerIOScripts(type, ioBehaviour) {
-    if (!ioBehaviour) return;
-    const {inputParameters = [], outputParameters = []} = ioBehaviour;
-    inputParameters.concat(outputParameters).forEach(({$type: ioType, name, definition}) => {
-      if (!definition) return;
-      if (definition.$type === 'camunda:Script') {
-        const filename = `${behaviour.id}/${type}/${ioType}/${name}`;
+function registerIOScripts(parentId, context, type, ioBehaviour) {
+  if (!ioBehaviour) return;
 
-        context.addScript(filename, {
-          parent: {id: behaviour.id, type: behaviour.type},
-          id: filename,
-          scriptFormat: definition.scriptFormat,
-          ...(definition.value ? {body: definition.value}: undefined),
-          ...(definition.resource ? {resource: definition.resource}: undefined),
-        });
-      }
+  const {inputParameters = [], outputParameters = []} = ioBehaviour;
+  for (const {$type, name, definition} of inputParameters.concat(outputParameters)) {
+    if (!definition) continue;
+    if (definition.$type !== 'camunda:Script') continue;
+
+    const filename = `${parentId}/${type}/${$type}/${name}`;
+
+    context.addScript(filename, {
+      id: filename,
+      scriptFormat: definition.scriptFormat,
+      ...(definition.value ? {body: definition.value}: undefined),
+      ...(definition.resource ? {resource: definition.resource}: undefined),
     });
   }
 }
