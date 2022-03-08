@@ -2,7 +2,7 @@ import * as Elements from 'bpmn-elements';
 import factory from './helpers/factory';
 import testHelpers from './helpers/testHelpers';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendoFn} from '../index';
+import {extendFn} from '../index';
 
 describe('extensions', () => {
   let moddleExtensions, source;
@@ -13,7 +13,7 @@ describe('extensions', () => {
 
   it('loads input parameter scripts', async () => {
     const moddleContext = await testHelpers.moddleContext(source, moddleExtensions);
-    const serialized = Serializer(moddleContext, TypeResolver(Elements), extendoFn);
+    const serialized = Serializer(moddleContext, TypeResolver(Elements), extendFn);
 
     const script = serialized.elements.scripts.find(({name}) => name === 'prepareUsersFullIndex/camunda:Connector/camunda:InputParameter/payload');
 
@@ -22,7 +22,7 @@ describe('extensions', () => {
 
   it('can be executed', async () => {
     const moddleContext = await testHelpers.moddleContext(source, moddleExtensions);
-    const serialized = Serializer(moddleContext, TypeResolver(Elements), extendoFn);
+    const serialized = Serializer(moddleContext, TypeResolver(Elements), extendFn);
 
     const definition = new Elements.Definition(new Elements.Context(serialized), {Logger: testHelpers.Logger});
     definition.run();

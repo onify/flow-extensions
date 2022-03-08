@@ -1,4 +1,4 @@
-import cron from 'cron-parser';
+import cronParser from 'cron-parser';
 import IOProperties from './src/IOProperties';
 import IOForm from './src/IOForm';
 import Connector from './src/Connector';
@@ -15,7 +15,7 @@ class FormatError extends Error {
 
 export {
   extensions,
-  extendoFn,
+  extendFn,
 };
 
 function extensions(element, context) {
@@ -205,15 +205,15 @@ class FormatActivity {
     this.activity = activity;
     this.resultVariable = activity.behaviour.resultVariable || '_' + activity.id;
 
-    let expireAt;
+    let timeCycles;
     if (activity.eventDefinitions) {
       for (const ed of activity.eventDefinitions.filter((e) => e.type === 'bpmn:TimerEventDefinition')) {
         if (!('timeCycle' in ed)) continue;
-        const expireAtDt = cron.parseExpression(ed.timeCycle).next().toDate();
-        if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
+        timeCycles = timeCycles || [];
+        timeCycles.push(ed.timeCycle);
       }
     }
-    this.expireAt = expireAt;
+    this.timeCycles = timeCycles;
   }
   resolve(elementApi) {
     let user, groups, assigneeValue, description;
@@ -231,13 +231,24 @@ class FormatActivity {
     if (assignee) assigneeValue = elementApi.resolveExpression(assignee);
     if (documentation) description = documentation[0]?.text;
 
+    let expireAt;
+    let timeCycles = this.timeCycles;
+    if (timeCycles) {
+      for (const cycle of timeCycles) {
+        const cron = elementApi.resolveExpression(cycle);
+        if (!cron) continue;
+        const expireAtDt = cronParser.parseExpression(cron).next().toDate();
+        if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
+      }
+    }
+
     return {
       resultVariable: this.resultVariable,
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' ? {scheduledStart} : undefined),
       ...(user?.length && {candidateUsers: user}),
       ...(groups?.length && {candidateGroups: groups}),
       ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
-      ...(this.expireAt && {expireAt: this.expireAt}),
+      ...(expireAt && {expireAt}),
       ...(assigneeValue && {assignee: assigneeValue}),
     };
   }
@@ -284,7 +295,7 @@ function resolveAndSplit(elementApi, str) {
     .filter(Boolean);
 }
 
-function extendoFn(behaviour, context) {
+function extendFn(behaviour, context) {
   if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
     const timer = behaviour.eventDefinitions.find(({type, behaviour: edBehaviour}) => edBehaviour && type === 'bpmn:TimerEventDefinition');
     if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});

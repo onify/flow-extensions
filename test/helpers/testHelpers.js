@@ -4,8 +4,8 @@ import * as Elements from 'bpmn-elements';
 import * as expressions from '@aircall/expression-parser';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
 import {Engine} from 'bpmn-engine';
-import {extensions, extendoFn} from '../../index';
-import {FlowScripts} from '../../src/FlowScripts';
+import {extensions, extendFn} from '../../index';
+import {FlowScripts} from './FlowScripts';
 import {promises as fs}  from 'fs';
 
 let exts;
@@ -31,7 +31,7 @@ async function getOnifyFlow(source, options) {
     for (const w of moddle.warnings) logger.warn(w);
   }
 
-  const serialized = Serializer(moddle, TypeResolver(Elements), extendoFn);
+  const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
   return new Elements.Definition(new Elements.Context(serialized), {
     ...getFlowOptions(serialized.name || serialized.id),
     ...options,
@@ -51,7 +51,7 @@ async function getEngine(name, source, options) {
 
 async function recoverOnifyFlow(source, state, options) {
   const moddle = await moddleContext(source, await getModdleExtensions());
-  const serialized = Serializer(moddle, TypeResolver(Elements), extendoFn);
+  const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
   return new Elements.Definition(new Elements.Context(serialized), {
     ...getFlowOptions(state.name || state.id),
     ...options,

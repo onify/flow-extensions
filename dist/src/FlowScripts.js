@@ -13,7 +13,6 @@ var _fs = require("fs");
 
 var _vm = require("vm");
 
-/* global console, Buffer */
 const kSyntaxError = Symbol.for('syntax error');
 const kResources = Symbol.for('resources base');
 

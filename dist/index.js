@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.extendoFn = extendoFn;
+exports.extendFn = extendFn;
 exports.extensions = extensions;
 
 var _cronParser = _interopRequireDefault(require("cron-parser"));
@@ -295,19 +295,17 @@ class FormatActivity {
   constructor(activity) {
     this.activity = activity;
     this.resultVariable = activity.behaviour.resultVariable || '_' + activity.id;
-    let expireAt;
+    let timeCycles;
 
     if (activity.eventDefinitions) {
       for (const ed of activity.eventDefinitions.filter(e => e.type === 'bpmn:TimerEventDefinition')) {
         if (!('timeCycle' in ed)) continue;
-
-        const expireAtDt = _cronParser.default.parseExpression(ed.timeCycle).next().toDate();
-
-        if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
+        timeCycles = timeCycles || [];
+        timeCycles.push(ed.timeCycle);
       }
     }
 
-    this.expireAt = expireAt;
+    this.timeCycles = timeCycles;
   }
 
   resolve(elementApi) {
@@ -326,6 +324,20 @@ class FormatActivity {
     if (candidateGroups) groups = resolveAndSplit(elementApi, candidateGroups);
     if (assignee) assigneeValue = elementApi.resolveExpression(assignee);
     if (documentation) description = (_documentation$ = documentation[0]) === null || _documentation$ === void 0 ? void 0 : _documentation$.text;
+    let expireAt;
+    let timeCycles = this.timeCycles;
+
+    if (timeCycles) {
+      for (const cycle of timeCycles) {
+        const cron = elementApi.resolveExpression(cycle);
+        if (!cron) continue;
+
+        const expireAtDt = _cronParser.default.parseExpression(cron).next().toDate();
+
+        if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
+      }
+    }
+
     return {
       resultVariable: this.resultVariable,
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' ? {
@@ -340,8 +352,8 @@ class FormatActivity {
       ...(!elementApi.content.description && description && {
         description: elementApi.resolveExpression(description)
       }),
-      ...(this.expireAt && {
-        expireAt: this.expireAt
+      ...(expireAt && {
+        expireAt
       }),
       ...(assigneeValue && {
         assignee: assigneeValue
@@ -394,7 +406,9 @@ function resolveAndSplit(elementApi, str) {
   return resolved.split(',').map(g => g.trim && g.trim().toLowerCase()).filter(Boolean);
 }
 
-function extendoFn(behaviour, context) {
+function extendFn(behaviour, context) {
+  var _behaviour$extensionE;
+
   if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
     const timer = behaviour.eventDefinitions.find(({
       type,
@@ -405,46 +419,37 @@ function extendoFn(behaviour, context) {
     });
   }
 
-  if (!behaviour.extensionElements || !Array.isArray(behaviour.extensionElements.values)) return;
-  const inputOutput = behaviour.extensionElements.values.find(({
-    $type
-  }) => $type === 'camunda:InputOutput');
-  const connector = behaviour.extensionElements.values.find(({
-    $type
-  }) => $type === 'camunda:Connector');
-  if (inputOutput) registerIOScripts(inputOutput.$type, inputOutput);
-  if (connector) registerIOScripts(connector.$type, connector.inputOutput);
+  if (!Array.isArray((_behaviour$extensionE = behaviour.extensionElements) === null || _behaviour$extensionE === void 0 ? void 0 : _behaviour$extensionE.values)) return;
+  const inputOutput = behaviour.extensionElements.values.find(el => el.$type === 'camunda:InputOutput');
+  const connector = behaviour.extensionElements.values.find(el => el.$type === 'camunda:Connector');
+  if (inputOutput) registerIOScripts(behaviour.id, context, inputOutput.$type, inputOutput);
+  if (connector) registerIOScripts(behaviour.id, context, connector.$type, connector.inputOutput);
+}
 
-  function registerIOScripts(type, ioBehaviour) {
-    if (!ioBehaviour) return;
-    const {
-      inputParameters = [],
-      outputParameters = []
-    } = ioBehaviour;
-    inputParameters.concat(outputParameters).forEach(({
-      $type: ioType,
-      name,
-      definition
-    }) => {
-      if (!definition) return;
+function registerIOScripts(parentId, context, type, ioBehaviour) {
+  if (!ioBehaviour) return;
+  const {
+    inputParameters = [],
+    outputParameters = []
+  } = ioBehaviour;
 
-      if (definition.$type === 'camunda:Script') {
-        const filename = `${behaviour.id}/${type}/${ioType}/${name}`;
-        context.addScript(filename, {
-          parent: {
-            id: behaviour.id,
-            type: behaviour.type
-          },
-          id: filename,
-          scriptFormat: definition.scriptFormat,
-          ...(definition.value ? {
-            body: definition.value
-          } : undefined),
-          ...(definition.resource ? {
-            resource: definition.resource
-          } : undefined)
-        });
-      }
+  for (const {
+    $type,
+    name,
+    definition
+  } of inputParameters.concat(outputParameters)) {
+    if (!definition) continue;
+    if (definition.$type !== 'camunda:Script') continue;
+    const filename = `${parentId}/${type}/${$type}/${name}`;
+    context.addScript(filename, {
+      id: filename,
+      scriptFormat: definition.scriptFormat,
+      ...(definition.value ? {
+        body: definition.value
+      } : undefined),
+      ...(definition.resource ? {
+        resource: definition.resource
+      } : undefined)
     });
   }
 }

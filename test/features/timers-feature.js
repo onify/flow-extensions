@@ -90,7 +90,7 @@ Feature('Flow timers', () => {
     });
   });
 
-  Scenario('Multiple starting schedules', () => {
+  Scenario('Multiple start timers', () => {
     let flow;
     Given('a flow with starting date and duration event', async () => {
       const source = `
@@ -190,6 +190,108 @@ Feature('Flow timers', () => {
     });
   });
 
+  Scenario('Time cycle expression', () => {
+    let flow;
+    Given('a flow with cron expressions', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start" />
+          <intermediateThrowEvent id="timer">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">\${environment.settings.postpone}</timeCycle>
+            </timerEventDefinition>
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">\${environment.settings.syndays}</timeCycle>
+            </timerEventDefinition>
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">\${environment.settings.tuesdays}</timeCycle>
+            </timerEventDefinition>
+          </intermediateThrowEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        settings: {
+          postpone: '0 1 * * *',
+          tuesdays: '* * * * 2',
+        },
+      });
+    });
+
+    let wait;
+    When('started', () => {
+      ck.freeze(Date.UTC(2022, 1, 12, 12, 30));
+      wait = flow.waitFor('activity.timer');
+      flow.run();
+    });
+
+    let element;
+    Then('run is paused', async () => {
+      await wait;
+      [element] = flow.getPostponed();
+      expect(element.type).to.equal('bpmn:IntermediateThrowEvent');
+    });
+
+    let timer;
+    And('a timer is registered with nearest date', () => {
+      [timer] = flow.environment.timers.executing;
+      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
+    });
+  });
+
+  Scenario('Duration and cycle combo', () => {
+    let flow;
+    Given('a flow with cron and duration', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start" />
+          <intermediateThrowEvent id="timer">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">\${environment.settings.postpone}</timeCycle>
+            </timerEventDefinition>
+            <timerEventDefinition>
+              <timeDuration xsi:type="tFormalExpression">PT1H</timeDuration>
+            </timerEventDefinition>
+          </intermediateThrowEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        settings: {
+          postpone: '0 1 * * *',
+        },
+      });
+    });
+
+    let wait;
+    When('started', () => {
+      ck.freeze(Date.UTC(2022, 1, 12, 12, 30));
+      wait = flow.waitFor('activity.timer');
+      flow.run();
+    });
+
+    let element;
+    Then('run is paused', async () => {
+      await wait;
+      [element] = flow.getPostponed();
+      expect(element.type).to.equal('bpmn:IntermediateThrowEvent');
+    });
+
+    let timer;
+    And('unfortunately a timer is registered with cron expiration (fix in bpmn-elements)', () => {
+      [timer] = flow.environment.timers.executing;
+      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
+    });
+  });
+
   Scenario('Invalid cron', () => {
     let flow;
     Given('a flow with an invalid starting cron', async () => {
@@ -212,15 +314,13 @@ Feature('Flow timers', () => {
 
     let error;
     When('started', () => {
-      try {
-        flow.run();
-      } catch (e) {
-        error = e;
-      }
+      error = flow.waitFor('error');
+      flow.run();
     });
 
-    Then('an error is thrown', () => {
-      expect(error).to.match(/Validation error/);
+    Then('an error is thrown', async () => {
+      const err = await error;
+      expect(err.content.error).to.match(/Validation error/);
     });
   });
 

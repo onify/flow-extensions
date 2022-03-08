@@ -1,16 +1,14 @@
-import ck from 'chronokinesis';
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
 import * as Elements from 'bpmn-elements';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendoFn} from '../..';
+import {extendFn} from '../..';
 
 Feature('Extend function', () => {
   let blueprintSource;
   before(() => {
     blueprintSource = factory.resource('activedirectory-index-users.bpmn');
   });
-  after(ck.reset);
 
   Scenario('Extract scripts', () => {
     let serialized, moddleContext;
@@ -19,7 +17,7 @@ Feature('Extend function', () => {
     });
 
     When('serialized', () => {
-      serialized = Serializer(moddleContext, TypeResolver(Elements), extendoFn);
+      serialized = Serializer(moddleContext, TypeResolver(Elements), extendFn);
     });
 
     Then('all scripts are registered', () => {

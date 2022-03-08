@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "Onify Flow extensions",
   "module": "index.js",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
+  "sideEffects": false,
   "directories": {
     "test": "test"
   },
@@ -12,7 +13,7 @@
     "posttest": "npm run dist && eslint . --cache",
     "prepare": "npm run dist",
     "predist": "node -e \"fs.rmdirSync('./dist/src', {recursive: true});\"",
-    "dist": "babel index.js -d dist && babel src -d dist/src",
+    "dist": "babel index.js -d dist && babel src -d dist/src && babel test/helpers/FlowScripts.js -d dist/src",
     "test:lcov": "c8 mocha -R dot && c8 report --reporter lcov && npm run posttest",
     "cov:html": "c8 mocha -R dot && c8 report --reporter html"
   },
@@ -61,8 +62,8 @@
     "exclude": [
       "dist",
       "test",
-      ".mocharc.cjs",
-      "babel.config.cjs"
+      ".mocharc.js",
+      "babel.config.js"
     ]
   }
 }

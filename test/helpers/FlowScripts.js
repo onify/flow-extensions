@@ -1,5 +1,3 @@
-/* global console, Buffer */
-
 import {join} from 'path';
 import {promises as fs}  from 'fs';
 import {Script} from 'vm';
