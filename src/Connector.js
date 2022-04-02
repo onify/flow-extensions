@@ -1,10 +1,4 @@
-class NotImplemented extends Error {
-  constructor(serviceId) {
-    super(`${serviceId} service function not found`);
-    this.code = 'EFLOW_NOT_IMPLEMENTED';
-    this.output = {statusCode: 501};
-  }
-}
+import {NotImplemented} from './Errors';
 
 export default function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);

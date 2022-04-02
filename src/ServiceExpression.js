@@ -1,3 +1,5 @@
+import {NotImplemented} from './Errors';
+
 export default function ServiceExpression(activity) {
   if (!(this instanceof ServiceExpression)) return new ServiceExpression(activity);
   this.activity = activity;
@@ -6,7 +8,14 @@ export default function ServiceExpression(activity) {
 }
 
 ServiceExpression.prototype.execute = function execute(executionMessage, callback) {
-  const serviceFn = this.activity.environment.resolveExpression(this.expression, executionMessage);
+  try {
+    const expression = this.expression;
+    var serviceFn = this.activity.environment.resolveExpression(expression, executionMessage);
+    if (typeof serviceFn !== 'function') throw new NotImplemented(`expression "${expression}"`);
+  } catch (err) {
+    return callback(err);
+  }
+
   serviceFn.call(this.activity, executionMessage, (err, result) => {
     callback(err, result);
   });

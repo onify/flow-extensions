@@ -5,16 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = Connector;
 
-class NotImplemented extends Error {
-  constructor(serviceId) {
-    super(`${serviceId} service function not found`);
-    this.code = 'EFLOW_NOT_IMPLEMENTED';
-    this.output = {
-      statusCode: 501
-    };
-  }
-
-}
+var _Errors = require("./Errors");
 
 function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);
@@ -33,7 +24,7 @@ Connector.prototype.execute = async function execute(...args) {
   const connectorId = this.connectorId;
   const executionMessage = this.executionMessage;
   const serviceFunction = environment.services[connectorId];
-  if (!serviceFunction) return callback(new NotImplemented(connectorId));
+  if (!serviceFunction) return callback(new _Errors.NotImplemented(connectorId));
 
   try {
     const input = io && (await io.getInput(activity, executionMessage));

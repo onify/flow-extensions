@@ -123,7 +123,7 @@ class IOList extends IOBase {
   }
   getValue(activity, executionMessage) {
     const name = this.name;
-    const items = this.behaviour.definition?.items;
+    const items = this.behaviour.definition.items;
 
     const result = [];
     if (!Array.isArray(items)) return {[name]: result};

@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Onify Flow extensions",
   "module": "index.js",
   "main": "dist/index.js",
@@ -39,22 +39,22 @@
     "@babel/core": "^7.17.8",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.7",
-    "bpmn-elements": "^7.0.0",
-    "bpmn-engine": "^13.0.1",
+    "bpmn-elements": "^8.0.0",
+    "bpmn-engine": "^14.0.0",
     "bpmn-moddle": "^7.1.2",
     "c8": "^7.11.0",
     "camunda-bpmn-moddle": "^6.1.2",
     "chai": "^4.3.6",
     "chronokinesis": "^3.1.2",
     "debug": "^4.3.4",
-    "eslint": "^8.11.0",
+    "eslint": "^8.12.0",
     "mocha": "^9.2.2",
     "mocha-cakes-2": "^3.3.0",
     "moddle-context-serializer": "^2.1.0",
     "nock": "^13.2.4"
   },
   "dependencies": {
-    "cron-parser": "^4.2.1"
+    "cron-parser": "^4.3.0"
   },
   "files": [
     "src",
