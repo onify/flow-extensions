@@ -130,7 +130,7 @@ class OnifyElementExtensions {
     activity.on('activity.execution.completed', async elementApi => {
       if (elementApi.fields.redelivered) return;
       formatQ.queueMessage({
-        routingKey: 'run.end.error'
+        routingKey: 'run.end.format'
       }, {
         endRoutingKey: 'run.end.complete'
       }, {
@@ -140,7 +140,7 @@ class OnifyElementExtensions {
       try {
         var format = await this._onExecuted(elementApi);
       } catch (err) {
-        return broker.publish('format', 'run.enter.error', {
+        return broker.publish('format', 'run.end.error', {
           error: err
         }, {
           persistent: false

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 1.0.0
+
+- proper routing keys for end formatting
+
 # 0.1.0
 
 - catch errors when resolving service expression

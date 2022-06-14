@@ -90,12 +90,12 @@ class OnifyElementExtensions {
     activity.on('activity.execution.completed', async (elementApi) => {
       if (elementApi.fields.redelivered) return;
 
-      formatQ.queueMessage({routingKey: 'run.end.error'}, {endRoutingKey: 'run.end.complete'}, {persistent: false});
+      formatQ.queueMessage({routingKey: 'run.end.format'}, {endRoutingKey: 'run.end.complete'}, {persistent: false});
 
       try {
         var format = await this._onExecuted(elementApi);
       } catch (err) {
-        return broker.publish('format', 'run.enter.error', {error: err}, {persistent: false});
+        return broker.publish('format', 'run.end.error', {error: err}, {persistent: false});
       }
 
       broker.publish('format', 'run.end.complete', {...format}, {persistent: false});
