@@ -5,6 +5,8 @@ import Connector from './src/Connector';
 import ServiceExpression from './src/ServiceExpression';
 import {InputOutput} from './src/IO';
 
+const iso8601cycle = /^\s*(R\d+\/)?P\w+/i;
+
 class FormatError extends Error {
   constructor(elementId, err) {
     super(`<${elementId}> ${err.message}`);
@@ -236,7 +238,8 @@ class FormatActivity {
     if (timeCycles) {
       for (const cycle of timeCycles) {
         const cron = elementApi.resolveExpression(cycle);
-        if (!cron) continue;
+        if (!cron || iso8601cycle.test(cron)) continue;
+
         const expireAtDt = cronParser.parseExpression(cron).next().toDate();
         if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
       }
@@ -244,7 +247,7 @@ class FormatActivity {
 
     return {
       resultVariable: this.resultVariable,
-      ...(scheduledStart && activity.parent.type === 'bpmn:Process' ? {scheduledStart} : undefined),
+      ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {scheduledStart}),
       ...(user?.length && {candidateUsers: user}),
       ...(groups?.length && {candidateGroups: groups}),
       ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
@@ -323,8 +326,8 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
     context.addScript(filename, {
       id: filename,
       scriptFormat: definition.scriptFormat,
-      ...(definition.value ? {body: definition.value}: undefined),
-      ...(definition.resource ? {resource: definition.resource}: undefined),
+      ...(definition.value && {body: definition.value}),
+      ...(definition.resource && {resource: definition.resource}),
     });
   }
 }

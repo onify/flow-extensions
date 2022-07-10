@@ -205,7 +205,7 @@ Feature('Flow timers', () => {
               <timeCycle xsi:type="tFormalExpression">\${environment.settings.postpone}</timeCycle>
             </timerEventDefinition>
             <timerEventDefinition>
-              <timeCycle xsi:type="tFormalExpression">\${environment.settings.syndays}</timeCycle>
+              <timeCycle xsi:type="tFormalExpression">\${environment.settings.saturdays}</timeCycle>
             </timerEventDefinition>
             <timerEventDefinition>
               <timeCycle xsi:type="tFormalExpression">\${environment.settings.tuesdays}</timeCycle>
@@ -218,6 +218,7 @@ Feature('Flow timers', () => {
         settings: {
           postpone: '0 1 * * *',
           tuesdays: '* * * * 2',
+          saturdays: '0 0 * * SAT',
         },
       });
     });
@@ -289,6 +290,199 @@ Feature('Flow timers', () => {
     And('unfortunately a timer is registered with cron expiration (fix in bpmn-elements)', () => {
       [timer] = flow.environment.timers.executing;
       expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
+    });
+  });
+
+  Scenario('Bound activity non-interrupting timer cycle', () => {
+    let flow;
+    Given('a task with a bound non-interrupting repeated timer cycle', async () => {
+      const source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        id="Definitions_1l30pnv" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="Process_0cn5rdh" isExecutable="true">
+          <startEvent id="start-cycle" />
+          <sequenceFlow id="to-task" sourceRef="start-cycle" targetRef="task" />
+          <manualTask id="task" />
+          <boundaryEvent id="bound-cycle" cancelActivity="false" attachedToRef="task">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">R3/PT1M</timeCycle>
+            </timerEventDefinition>
+          </boundaryEvent>
+          <sequenceFlow id="to-cycle-end" sourceRef="bound-cycle" targetRef="cycle-end" />
+          <endEvent id="cycle-end" />
+          <sequenceFlow id="to-end" sourceRef="task" targetRef="end" />
+          <endEvent id="end" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    let timer;
+    When('definition is ran', () => {
+      timer = flow.waitFor('activity.timer');
+      flow.run();
+    });
+
+    let activity;
+    Then('the bound cycle event is waiting', async () => {
+      await timer;
+      [activity] = flow.getPostponed();
+      expect(activity).to.have.property('id', 'bound-cycle');
+    });
+
+    And('time cycle is executing', () => {
+      const [execution] = activity.getExecuting();
+      expect(execution.content).to.have.property('timeCycle', 'R3/PT1M');
+    });
+
+    When('cycle times out', () => {
+      flow.environment.timers.executing[0].callback();
+    });
+
+    Then('bound outbound flows are taken', () => {
+      expect(flow.getActivityById('cycle-end').counters).to.have.property('taken', 1);
+    });
+
+    And('time cycle is still executing', () => {
+      expect(flow.environment.timers.executing).to.have.length(1);
+
+      [, activity] = flow.getPostponed();
+      expect(activity).to.have.property('id', 'bound-cycle');
+      const [execution] = activity.getExecuting();
+      expect(execution.content).to.have.property('timeCycle', 'R3/PT1M');
+      expect(execution.content).to.have.property('repeat', 2);
+    });
+
+    When('cycle times out a second time', () => {
+      flow.environment.timers.executing[0].callback();
+    });
+
+    Then('bound outbound flows are taken', () => {
+      expect(flow.getActivityById('cycle-end').counters).to.have.property('taken', 2);
+    });
+
+    And('time cycle is still executing', () => {
+      expect(flow.environment.timers.executing).to.have.length(1);
+
+      [, activity] = flow.getPostponed();
+      expect(activity).to.have.property('id', 'bound-cycle');
+      const [execution] = activity.getExecuting();
+      expect(execution.content).to.have.property('timeCycle', 'R3/PT1M');
+      expect(execution.content).to.have.property('repeat', 1);
+    });
+
+    When('cycle times out a third time', () => {
+      flow.environment.timers.executing[0].callback();
+    });
+
+    Then('bound outbound flows are taken', () => {
+      expect(flow.getActivityById('cycle-end').counters).to.have.property('taken', 3);
+    });
+
+    And('time cycle has completed', () => {
+      expect(flow.environment.timers.executing).to.have.length(0);
+
+      const postponed = flow.getPostponed();
+      expect(postponed.length).to.equal(1);
+      expect(postponed[0]).to.have.property('id', 'task');
+    });
+
+    let end;
+    When('task is signaled', () => {
+      end = flow.waitFor('leave');
+      flow.signal({id: 'task'});
+    });
+
+    Then('run completes', () => {
+      return end;
+    });
+
+    When('flow is ran again', () => {
+      flow.run();
+    });
+
+    Then('the bound cycle event is waiting', () => {
+      [activity] = flow.getPostponed();
+      expect(activity).to.have.property('id', 'bound-cycle');
+    });
+
+    And('time cycle is executing', () => {
+      const [execution] = activity.getExecuting();
+      expect(execution.content).to.have.property('timeCycle', 'R3/PT1M');
+    });
+
+    When('cycle times out', () => {
+      flow.environment.timers.executing[0].callback();
+      flow.cancelActivity({id: 'start-cycle'});
+    });
+
+    When('task is signaled', () => {
+      end = flow.waitFor('leave');
+      flow.signal({id: 'task'});
+    });
+
+    Then('run completes', () => {
+      return end;
+    });
+  });
+
+  Scenario('Time cycle with ISO8601 duration', () => {
+    let flow;
+    Given('a task with a bound non-interrupting timer cycle with duration', async () => {
+      const source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        id="Definitions_1l30pnv" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="Process_0cn5rdh" isExecutable="true">
+          <startEvent id="start-cycle" />
+          <sequenceFlow id="to-task" sourceRef="start-cycle" targetRef="task" />
+          <manualTask id="task" />
+          <boundaryEvent id="bound-cycle" cancelActivity="false" attachedToRef="task">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">PT1M</timeCycle>
+            </timerEventDefinition>
+          </boundaryEvent>
+          <sequenceFlow id="to-cycle-end" sourceRef="bound-cycle" targetRef="cycle-end" />
+          <endEvent id="cycle-end" />
+          <sequenceFlow id="to-end" sourceRef="task" targetRef="end" />
+          <endEvent id="end" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    let timer, end;
+    When('definition is ran', () => {
+      timer = flow.waitFor('activity.timer');
+      end = flow.waitFor('leave');
+      flow.run();
+    });
+
+    let activity;
+    Then('the bound cycle event is waiting', async () => {
+      await timer;
+      [activity] = flow.getPostponed();
+      expect(activity).to.have.property('id', 'bound-cycle');
+    });
+
+    And('time cycle is executing', () => {
+      const [execution] = activity.getExecuting();
+      expect(execution.content).to.have.property('timeCycle', 'PT1M');
+    });
+
+    When('cycle times out', () => {
+      flow.environment.timers.executing[0].callback();
+    });
+
+    And('task is signaled', () => {
+      flow.signal({id: 'task'});
+    });
+
+    Then('flow completes', () => {
+      return end;
     });
   });
 

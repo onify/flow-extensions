@@ -51,8 +51,8 @@ class InputOutput {
             type: parm.$type,
             behaviour: {
               scriptFormat,
-              ...(value ? {script: value} : undefined),
-              ...(resource ? {resource} : undefined),
+              ...(value && {script: value}),
+              ...(resource && {resource}),
             },
           });
 

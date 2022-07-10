@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 1.0.1
+
+- allow ISO8601 repeating interval and duration in timeCycle
+
 # 1.0.0
 
 - proper routing keys for end formatting

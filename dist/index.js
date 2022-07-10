@@ -20,6 +20,8 @@ var _IO = require("./src/IO");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const iso8601cycle = /^\s*(R\d+\/)?P\w+/i;
+
 class FormatError extends Error {
   constructor(elementId, err) {
     super(`<${elementId}> ${err.message}`);
@@ -330,7 +332,7 @@ class FormatActivity {
     if (timeCycles) {
       for (const cycle of timeCycles) {
         const cron = elementApi.resolveExpression(cycle);
-        if (!cron) continue;
+        if (!cron || iso8601cycle.test(cron)) continue;
 
         const expireAtDt = _cronParser.default.parseExpression(cron).next().toDate();
 
@@ -340,9 +342,9 @@ class FormatActivity {
 
     return {
       resultVariable: this.resultVariable,
-      ...(scheduledStart && activity.parent.type === 'bpmn:Process' ? {
+      ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {
         scheduledStart
-      } : undefined),
+      }),
       ...(((_user = user) === null || _user === void 0 ? void 0 : _user.length) && {
         candidateUsers: user
       }),
@@ -444,12 +446,12 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
     context.addScript(filename, {
       id: filename,
       scriptFormat: definition.scriptFormat,
-      ...(definition.value ? {
+      ...(definition.value && {
         body: definition.value
-      } : undefined),
-      ...(definition.resource ? {
+      }),
+      ...(definition.resource && {
         resource: definition.resource
-      } : undefined)
+      })
     });
   }
 }

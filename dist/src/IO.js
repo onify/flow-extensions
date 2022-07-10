@@ -64,12 +64,12 @@ class InputOutput {
               type: parm.$type,
               behaviour: {
                 scriptFormat,
-                ...(value ? {
+                ...(value && {
                   script: value
-                } : undefined),
-                ...(resource ? {
+                }),
+                ...(resource && {
                   resource
-                } : undefined)
+                })
               }
             });
             mapped.push(new IOScript(parm, id));
