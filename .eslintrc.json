@@ -14,7 +14,15 @@
     "linebreak-style": ["error", "unix"],
     "no-console": 2,
     "no-fallthrough": 0,
+    "no-multiple-empty-lines": [ "error", {
+      "max": 1,
+      "maxEOF": 0,
+      "maxBOF": 0
+    } ],
+    "no-undef": 2,
+    "no-undef-init": 2,
     "quotes": ["error", "single"],
+    "require-await": 2,
     "semi": ["error", "always"],
     "space-before-function-paren": ["error", {
       "anonymous": "always",

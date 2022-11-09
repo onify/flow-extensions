@@ -4,9 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = Connector;
-
 var _Errors = require("./Errors");
-
 function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);
   this.connectorId = connectorId;
@@ -14,7 +12,6 @@ function Connector(connectorId, io, activity, executionMessage) {
   this.activity = activity;
   this.executionMessage = executionMessage;
 }
-
 Connector.prototype.execute = async function execute(...args) {
   const callback = args.pop();
   args.push(formatCallback);
@@ -25,20 +22,18 @@ Connector.prototype.execute = async function execute(...args) {
   const executionMessage = this.executionMessage;
   const serviceFunction = environment.services[connectorId];
   if (!serviceFunction) return callback(new _Errors.NotImplemented(connectorId));
-
   try {
     const input = io && (await io.getInput(activity, executionMessage));
     await serviceFunction.call(activity, input, ...args);
   } catch (err) {
     return callback(err);
   }
-
   async function formatCallback(serviceErr, result) {
     if (serviceErr) return callback(serviceErr);
     if (!(io !== null && io !== void 0 && io.output.length)) return callback(null, result);
-
     try {
-      const formattedResult = await io.getOutput(activity, { ...executionMessage,
+      const formattedResult = await io.getOutput(activity, {
+        ...executionMessage,
         ...result
       });
       return callback(null, formattedResult);

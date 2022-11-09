@@ -2,7 +2,7 @@
 
 (async () => await getStatus())();
 
-async function getStatus() {
+function getStatus() {
   return new Promise((resolve) => {
     Buffer.from('a');
     encrypt();

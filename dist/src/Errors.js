@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.NotImplemented = void 0;
-
 class NotImplemented extends Error {
   constructor(serviceId) {
     super(`${serviceId} service function not found`);
@@ -13,7 +12,5 @@ class NotImplemented extends Error {
       statusCode: 501
     };
   }
-
 }
-
 exports.NotImplemented = NotImplemented;

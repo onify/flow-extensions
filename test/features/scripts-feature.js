@@ -113,7 +113,7 @@ Feature('Flow scripts', () => {
       flow.run();
     });
 
-    Then('script is ignored', async () => {
+    Then('script is ignored', () => {
       return end;
     });
   });
@@ -301,7 +301,7 @@ Feature('Flow scripts', () => {
     });
 
     let error;
-    When('executed', async () => {
+    When('executed', () => {
       error = flow.waitFor('error');
       flow.run();
     });
@@ -326,7 +326,7 @@ Feature('Flow scripts', () => {
     });
 
     let error;
-    When('executed', async () => {
+    When('executed', () => {
       error = flow.waitFor('error');
       flow.run();
     });

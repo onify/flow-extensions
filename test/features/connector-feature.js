@@ -164,7 +164,7 @@ Feature('Flow connector', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyApiRequest(...args) {
+          onifyApiRequest(...args) {
             args.pop()(new Error('Call failed'));
           }
         }
@@ -219,7 +219,7 @@ Feature('Flow connector', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyApiRequest(...args) {
+          onifyApiRequest(...args) {
             args.pop()(null, {statuscode: 200});
           }
         }
@@ -275,7 +275,7 @@ Feature('Flow connector', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyApiRequest(...args) {
+          onifyApiRequest(...args) {
             args.pop()();
           }
         }
@@ -320,7 +320,7 @@ Feature('Flow connector', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyApiRequest() {
+          onifyApiRequest() {
             throw new Error('Something went wrong');
           }
         }
@@ -502,7 +502,7 @@ Feature('Flow connector', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyElevatedApiRequest(...args) {
+          onifyElevatedApiRequest(...args) {
             apiCalls.push(args);
           }
         }

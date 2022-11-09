@@ -276,7 +276,6 @@ class FormatProcess {
       candidateStarterGroups,
     } = bp.behaviour;
 
-
     if (candidateStarterUsers) user = resolveAndSplit(elementApi, candidateStarterUsers);
     if (candidateStarterGroups) groups = resolveAndSplit(elementApi, candidateStarterGroups);
     if (documentation) description = documentation[0]?.text;

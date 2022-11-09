@@ -136,7 +136,7 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
     return next(new FlowScriptError(err));
   }
 
-  async function next(err, ...args) {
+  function next(err, ...args) {
     if (callbackCalled) return;
     callbackCalled = true;
     if (err) return callback(err);

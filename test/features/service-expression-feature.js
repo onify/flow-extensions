@@ -23,7 +23,7 @@ Feature('Service expression', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
-          async onifyApiRequest(...args) {
+          onifyApiRequest(...args) {
             args.pop()();
           },
         },

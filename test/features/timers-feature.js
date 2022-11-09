@@ -170,7 +170,7 @@ Feature('Flow timers', () => {
       flow.run();
     });
 
-    Then('run is paused at start event', async () => {
+    Then('run is paused at start event', () => {
       [element] = flow.getPostponed();
       expect(element.type).to.equal('bpmn:StartEvent');
       expect(element.content).to.have.property('description', 'Glockenspiel');
