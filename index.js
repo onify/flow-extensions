@@ -72,26 +72,22 @@ class OnifyElementExtensions {
       activity.behaviour.Service = Service;
     }
   }
-  activate() {
+  activate(message) {
     const activity = this.activity;
     const broker = activity.broker;
     const formatQ = activity.broker.getQueue('format-run-q');
 
-    activity.on('enter', async (elementApi) => {
-      formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
-
-      try {
-        var format = await this._onEnter(elementApi);
-      } catch (err) {
-        return broker.publish('format', 'run.enter.error', {error: err}, {persistent: false});
-      }
-
-      broker.publish('format', 'run.enter.complete', format, {persistent: false});
-    }, {consumerTag: '_onify-extension-on-enter'});
+    if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
+      activity.on('start', (elementApi) => {
+        this._formatOnEnter(broker, formatQ, elementApi);
+      }, {consumerTag: '_onify-extension-on-enter'});
+    } else {
+      activity.on('enter', (elementApi) => {
+        this._formatOnEnter(broker, formatQ, elementApi);
+      }, {consumerTag: '_onify-extension-on-enter'});
+    }
 
     activity.on('activity.execution.completed', async (elementApi) => {
-      if (elementApi.fields.redelivered) return;
-
       formatQ.queueMessage({routingKey: 'run.end.format'}, {endRoutingKey: 'run.end.complete'}, {persistent: false});
 
       try {
@@ -107,6 +103,17 @@ class OnifyElementExtensions {
     const broker = this.activity.broker;
     broker.cancel('_onify-extension-on-enter');
     broker.cancel('_onify-extension-on-executed');
+  }
+  async _formatOnEnter(broker, formatQ, elementApi) {
+    formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
+
+    try {
+      var format = await this._onEnter(elementApi);
+    } catch (err) {
+      return broker.publish('format', 'run.enter.error', {error: err}, {persistent: false});
+    }
+
+    broker.publish('format', 'run.enter.complete', format, {persistent: false});
   }
   async _onEnter(elementApi) {
     const {format, properties, io, form} = this.extensions;
@@ -177,7 +184,6 @@ function getExtensions(element, context) {
 
   const extensions = element.behaviour.extensionElements?.values;
   if (!extensions) return result;
-
 
   for (const ext of extensions) {
     switch (ext.$type) {
