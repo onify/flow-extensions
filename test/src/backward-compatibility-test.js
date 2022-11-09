@@ -1,5 +1,6 @@
 import {Engine} from 'bpmn-engine';
 import {Engine as Engine14} from 'bpmn-engine-14';
+import * as Elements81 from 'bpmn-elements-8-1';
 import testHelpers from '../helpers/testHelpers';
 
 const source = `<?xml version="1.0" encoding="UTF-8"?>
@@ -50,6 +51,7 @@ describe('backward compatibility', () => {
     const extensions = testHelpers.getModdleExtensions();
     const engine14 = new Engine14({
       name: 'engine-14',
+      elements: Elements81,
       source,
       moddleOptions: await testHelpers.getModdleExtensions(),
       extensions: {onify: extensions},

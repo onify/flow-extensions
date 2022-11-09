@@ -1,7 +1,11 @@
 Changelog
 =========
 
-# 1.0.1
+# 1.2.0
+
+- fix resume extension when recovered mid formatting
+
+# 1.1.0
 
 - allow ISO8601 repeating interval and duration in timeCycle
 
