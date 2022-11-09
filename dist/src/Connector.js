@@ -30,7 +30,7 @@ Connector.prototype.execute = async function execute(...args) {
   }
   async function formatCallback(serviceErr, result) {
     if (serviceErr) return callback(serviceErr);
-    if (!(io !== null && io !== void 0 && io.output.length)) return callback(null, result);
+    if (!io?.output.length) return callback(null, result);
     try {
       const formattedResult = await io.getOutput(activity, {
         ...executionMessage,

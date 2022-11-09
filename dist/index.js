@@ -165,15 +165,14 @@ class OnifyElementExtensions {
       Object.assign(elementApi.content, result);
     }
     if (io) {
-      var _io$input, _io$output;
-      if ((_io$input = io.input) !== null && _io$input !== void 0 && _io$input.length) {
+      if (io.input?.length) {
         const input = await io.getInput(this.activity, elementApi);
         Object.assign(result, {
           input
         });
         Object.assign(elementApi.content, result);
       }
-      if ((_io$output = io.output) !== null && _io$output !== void 0 && _io$output.length) {
+      if (io.output?.length) {
         result.assignToOutput = true;
       }
     }
@@ -190,7 +189,7 @@ class OnifyElementExtensions {
       io
     } = this.extensions;
     const result = {};
-    if (io !== null && io !== void 0 && io.output.length) {
+    if (io?.output.length) {
       const output = await io.getOutput(this.activity, elementApi);
       Object.assign(result, {
         output
@@ -223,24 +222,23 @@ class OnifyElementExtensions {
   }
 }
 function getExtensions(element, context) {
-  var _element$behaviour$ex, _ext$values, _ext$fields;
   const result = {
     format: element.type === 'bpmn:Process' ? new FormatProcess(element) : new FormatActivity(element)
   };
   const expression = element.behaviour.expression;
   if (expression) result.Service = _ServiceExpression.default;
-  const extensions = (_element$behaviour$ex = element.behaviour.extensionElements) === null || _element$behaviour$ex === void 0 ? void 0 : _element$behaviour$ex.values;
+  const extensions = element.behaviour.extensionElements?.values;
   if (!extensions) return result;
   for (const ext of extensions) {
     switch (ext.$type) {
       case 'camunda:Properties':
-        if ((_ext$values = ext.values) !== null && _ext$values !== void 0 && _ext$values.length) result.properties = new _IOProperties.default(element, ext);
+        if (ext.values?.length) result.properties = new _IOProperties.default(element, ext);
         break;
       case 'camunda:InputOutput':
         result.io = new _IO.InputOutput(element.id, ext, context);
         break;
       case 'camunda:FormData':
-        if ((_ext$fields = ext.fields) !== null && _ext$fields !== void 0 && _ext$fields.length) result.form = new _IOForm.default(element, ext);
+        if (ext.fields?.length) result.form = new _IOForm.default(element, ext);
         break;
       case 'camunda:Connector':
         {
@@ -271,7 +269,6 @@ class FormatActivity {
     this.timeCycles = timeCycles;
   }
   resolve(elementApi) {
-    var _documentation$, _user, _groups;
     let user, groups, assigneeValue, description;
     const activity = this.activity;
     const {
@@ -284,7 +281,7 @@ class FormatActivity {
     if (candidateUsers) user = resolveAndSplit(elementApi, candidateUsers);
     if (candidateGroups) groups = resolveAndSplit(elementApi, candidateGroups);
     if (assignee) assigneeValue = elementApi.resolveExpression(assignee);
-    if (documentation) description = (_documentation$ = documentation[0]) === null || _documentation$ === void 0 ? void 0 : _documentation$.text;
+    if (documentation) description = documentation[0]?.text;
     let expireAt;
     let timeCycles = this.timeCycles;
     if (timeCycles) {
@@ -300,10 +297,10 @@ class FormatActivity {
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {
         scheduledStart
       }),
-      ...(((_user = user) === null || _user === void 0 ? void 0 : _user.length) && {
+      ...(user?.length && {
         candidateUsers: user
       }),
-      ...(((_groups = groups) === null || _groups === void 0 ? void 0 : _groups.length) && {
+      ...(groups?.length && {
         candidateGroups: groups
       }),
       ...(!elementApi.content.description && description && {
@@ -323,7 +320,6 @@ class FormatProcess {
     this.process = bp;
   }
   resolve(elementApi) {
-    var _documentation$2, _user2, _groups2;
     let user, groups, description;
     const bp = this.process;
     const {
@@ -333,13 +329,13 @@ class FormatProcess {
     } = bp.behaviour;
     if (candidateStarterUsers) user = resolveAndSplit(elementApi, candidateStarterUsers);
     if (candidateStarterGroups) groups = resolveAndSplit(elementApi, candidateStarterGroups);
-    if (documentation) description = (_documentation$2 = documentation[0]) === null || _documentation$2 === void 0 ? void 0 : _documentation$2.text;
+    if (documentation) description = documentation[0]?.text;
     return {
       resultVariable: this.resultVariable,
-      ...(((_user2 = user) === null || _user2 === void 0 ? void 0 : _user2.length) && {
+      ...(user?.length && {
         candidateStarterUsers: user
       }),
-      ...(((_groups2 = groups) === null || _groups2 === void 0 ? void 0 : _groups2.length) && {
+      ...(groups?.length && {
         candidateStarterGroups: groups
       }),
       ...(!elementApi.content.description && description && {
@@ -357,7 +353,6 @@ function resolveAndSplit(elementApi, str) {
   return resolved.split(',').map(g => g.trim && g.trim().toLowerCase()).filter(Boolean);
 }
 function extendFn(behaviour, context) {
-  var _behaviour$extensionE;
   if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
     const timer = behaviour.eventDefinitions.find(({
       type,
@@ -367,7 +362,7 @@ function extendFn(behaviour, context) {
       scheduledStart: timer.behaviour.timeCycle
     });
   }
-  if (!Array.isArray((_behaviour$extensionE = behaviour.extensionElements) === null || _behaviour$extensionE === void 0 ? void 0 : _behaviour$extensionE.values)) return;
+  if (!Array.isArray(behaviour.extensionElements?.values)) return;
   const inputOutput = behaviour.extensionElements.values.find(el => el.$type === 'camunda:InputOutput');
   const connector = behaviour.extensionElements.values.find(el => el.$type === 'camunda:Connector');
   if (inputOutput) registerIOScripts(behaviour.id, context, inputOutput.$type, inputOutput);
