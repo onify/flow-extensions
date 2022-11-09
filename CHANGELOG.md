@@ -1,9 +1,10 @@
 Changelog
 =========
 
-# 1.2.0
+# 2.0.0
 
 - fix resume extension when recovered mid formatting
+- drop node 12 support
 
 # 1.1.0
 
