@@ -12,6 +12,7 @@ let exts;
 
 export default {
   moddleContext,
+  getFlowOptions,
   getModdleExtensions,
   getOnifyFlow,
   Logger,
@@ -58,14 +59,16 @@ async function recoverOnifyFlow(source, state, options) {
   }).recover(state);
 }
 
-function getFlowOptions(name) {
+function getFlowOptions(name, options) {
   return {
     Logger,
     extensions: {extensions},
     services: {
+      httpRequest() {},
       onifyApiRequest() {},
       onifyElevatedApiRequest() {},
       parseJSON() {},
+      ...options?.services,
     },
     scripts: new FlowScripts(name, './test/resources', {
       encrypt() {},
