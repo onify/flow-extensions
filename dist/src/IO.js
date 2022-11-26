@@ -167,7 +167,7 @@ class IOScript extends IOBase {
       ...rest
     } = executionMessage;
     const scope = {
-      id: this.scriptId,
+      id: this.id,
       type: this.type,
       name,
       fields,

@@ -1,4 +1,4 @@
-import ServiceExpression from '../../src/ServiceExpression';
+import ServiceExpression from '../../src/ServiceExpression.js';
 
 describe('ServiceExpression', () => {
   it('can be instantiated without new', () => {

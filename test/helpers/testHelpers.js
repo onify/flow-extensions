@@ -1,12 +1,12 @@
-import BpmnModdle from 'bpmn-moddle';
-import Debug from 'debug';
-import * as Elements from 'bpmn-elements';
-import * as expressions from '@aircall/expression-parser';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
 import {Engine} from 'bpmn-engine';
-import {extensions, extendFn} from '../../index';
-import {FlowScripts} from './FlowScripts';
-import {promises as fs}  from 'fs';
+import {extensions, extendFn} from '../../index.js';
+import {FlowScripts} from './FlowScripts.js';
+import {promises as fs} from 'fs';
+import * as Elements from 'bpmn-elements';
+import * as expressions from '@aircall/expression-parser';
+import BpmnModdle from 'bpmn-moddle';
+import Debug from 'debug';
 
 let exts;
 

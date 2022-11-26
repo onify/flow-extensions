@@ -336,4 +336,29 @@ Feature('Flow scripts', () => {
       expect(err.content.error.message).to.equal('command-definition/bpmn:ScriptTask/task: script resource ./io-sripts.js not found');
     });
   });
+
+  Scenario('Faulty external resource expression', () => {
+    let flow;
+    Given('script task with missing resource', async () => {
+      const source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="command-definition" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <scriptTask id="task" scriptFormat="js" camunda:resource="\${environment.variables.scriptResource[']}" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    let error;
+    When('executed', () => {
+      error = flow.waitFor('error');
+      flow.run();
+    });
+
+    Then('an Error is thrown indicating resource expression failed', async () => {
+      const err = await error;
+      expect(err.content.error.message).to.contain('Parser Error');
+    });
+  });
 });

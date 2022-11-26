@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import testHelpers from '../helpers/testHelpers.js';
 
 Feature('Recover flow', () => {

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 3.0.0
+
+- Support activity script and expression execution listeners
+- Remove default behaviour of saving activity output even if output is not declared. Output **was** saved to `environment.output._<Activity ID>` if no result variable or output was declared. The reason was that there was no easy way of getting output from SubProcess or a multi-instance task. Now SubProcess output can be defined and multi-instance output can be solved with execution listener
+
 # 2.0.0
 
 - fix resume extension when recovered mid formatting

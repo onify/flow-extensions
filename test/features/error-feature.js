@@ -1,4 +1,4 @@
-import testHelpers from '../helpers/testHelpers';
+import testHelpers from '../helpers/testHelpers.js';
 
 Feature('Flow errors', () => {
   Scenario('Flows with invalid expression', () => {

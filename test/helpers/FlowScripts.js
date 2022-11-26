@@ -1,5 +1,5 @@
 import {join} from 'path';
-import {promises as fs}  from 'fs';
+import {promises as fs} from 'fs';
 import {Script} from 'vm';
 
 const kSyntaxError = Symbol.for('syntax error');
@@ -103,7 +103,7 @@ FlowScripts.prototype.getScript = function getScript(scriptType, {id}) {
 function JavaScript(flowName, scriptBody, runContext, options) {
   this.flowName = flowName;
   this._runContext = runContext;
-  this.timeout = options && options.timeout;
+  this.timeout = options?.timeout;
 
   try {
     this.script = new Script(scriptBody, options);
@@ -153,13 +153,18 @@ function JavaScriptResource(flowName, resource, resourceBase, runContext, option
 }
 
 JavaScriptResource.prototype.execute = async function execute(executionContext, callback) {
+  let resource;
   try {
-    var scriptBody = await fs.readFile(join(this[kResources], executionContext.resolveExpression(this.resource))); // eslint-disable-line no-var
+    resource = executionContext.resolveExpression(this.resource);
+    var scriptBody = await fs.readFile(join(this[kResources], resource)); // eslint-disable-line no-var
   } catch (err) {
+    if (err instanceof SyntaxError) {
+      return callback(err);
+    }
     const {filename} = this.options;
-    return callback(new Error(`${filename}: script resource ${this.resource} not found`));
+    return callback(new Error(`${filename}: script resource ${resource || this.resource} not found`));
   }
 
-  const script = new JavaScript(this.flowName, scriptBody, this._runContext, {...this.options, filename: this.resource});
+  const script = new JavaScript(this.flowName, scriptBody, this._runContext, {...this.options, filename: `${this.options.filename}/${resource}`});
   return script.execute(executionContext, callback);
 };

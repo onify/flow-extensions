@@ -1,8 +1,8 @@
-import * as Elements from 'bpmn-elements';
-import factory from './helpers/factory';
-import testHelpers from './helpers/testHelpers';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendFn} from '../index';
+import {extendFn} from '../index.js';
+import * as Elements from 'bpmn-elements';
+import factory from './helpers/factory.js';
+import testHelpers from './helpers/testHelpers.js';
 
 describe('extensions', () => {
   let moddleExtensions, source;

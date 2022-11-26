@@ -105,7 +105,7 @@ FlowScripts.prototype.getScript = function getScript(scriptType, {
 function JavaScript(flowName, scriptBody, runContext, options) {
   this.flowName = flowName;
   this._runContext = runContext;
-  this.timeout = options && options.timeout;
+  this.timeout = options === null || options === void 0 ? void 0 : options.timeout;
   try {
     this.script = new _vm.Script(scriptBody, options);
   } catch (err) {
@@ -151,17 +151,22 @@ function JavaScriptResource(flowName, resource, resourceBase, runContext, option
   this[kResources] = resourceBase;
 }
 JavaScriptResource.prototype.execute = async function execute(executionContext, callback) {
+  let resource;
   try {
-    var scriptBody = await _fs.promises.readFile((0, _path.join)(this[kResources], executionContext.resolveExpression(this.resource))); // eslint-disable-line no-var
+    resource = executionContext.resolveExpression(this.resource);
+    var scriptBody = await _fs.promises.readFile((0, _path.join)(this[kResources], resource)); // eslint-disable-line no-var
   } catch (err) {
+    if (err instanceof SyntaxError) {
+      return callback(err);
+    }
     const {
       filename
     } = this.options;
-    return callback(new Error(`${filename}: script resource ${this.resource} not found`));
+    return callback(new Error(`${filename}: script resource ${resource || this.resource} not found`));
   }
   const script = new JavaScript(this.flowName, scriptBody, this._runContext, {
     ...this.options,
-    filename: this.resource
+    filename: `${this.options.filename}/${resource}`
   });
   return script.execute(executionContext, callback);
 };

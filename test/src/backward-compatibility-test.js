@@ -1,7 +1,7 @@
 import {Engine} from 'bpmn-engine';
 import {Engine as Engine14} from 'bpmn-engine-14';
 import * as Elements81 from 'bpmn-elements-8-1';
-import testHelpers from '../helpers/testHelpers';
+import testHelpers from '../helpers/testHelpers.js';
 
 const source = `<?xml version="1.0" encoding="UTF-8"?>
 <definitions id="Definitions_1" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://bpmn.io/schema/bpmn">

@@ -1,9 +1,10 @@
 import cronParser from 'cron-parser';
-import IOProperties from './src/IOProperties';
-import IOForm from './src/IOForm';
-import Connector from './src/Connector';
-import ServiceExpression from './src/ServiceExpression';
-import {InputOutput} from './src/IO';
+import IOProperties from './src/IOProperties.js';
+import IOForm from './src/IOForm.js';
+import Connector from './src/Connector.js';
+import ServiceExpression from './src/ServiceExpression.js';
+import {InputOutput} from './src/IO.js';
+import ExtensionListeners from './src/ExecutionListeners.js';
 
 const iso8601cycle = /^\s*(R\d+\/)?P\w+/i;
 
@@ -98,11 +99,41 @@ class OnifyElementExtensions {
 
       broker.publish('format', 'run.end.complete', {...format}, {persistent: false});
     }, {consumerTag: '_onify-extension-on-executed'});
+
+    const executionListeners = this.extensions.listeners;
+    if (executionListeners?.onStart) {
+      activity.on('start', async (elementApi) => {
+        formatQ.queueMessage({routingKey: 'run.listener.start'}, {endRoutingKey: 'run.listener.start.complete'}, {persistent: false});
+
+        try {
+          var format = await executionListeners.execute('start', elementApi);
+        } catch (err) {
+          return broker.publish('format', 'run.listener.start.error', {error: err}, {persistent: false});
+        }
+
+        broker.publish('format', 'run.listener.start.complete', {...format}, {persistent: false});
+      }, {consumerTag: '_onify-extension-on-listenerstart'});
+    }
+    if (executionListeners?.onEnd) {
+      activity.on('end', async (elementApi) => {
+        formatQ.queueMessage({routingKey: 'run.listener.end'}, {endRoutingKey: 'run.listener.end.complete'}, {persistent: false});
+
+        try {
+          var format = await executionListeners.execute('end', elementApi);
+        } catch (err) {
+          return broker.publish('format', 'run.listener.end.error', {error: err}, {persistent: false});
+        }
+
+        broker.publish('format', 'run.listener.end.complete', {...format}, {persistent: false});
+      }, {consumerTag: '_onify-extension-on-listenerend'});
+    }
   }
   deactivate() {
     const broker = this.activity.broker;
     broker.cancel('_onify-extension-on-enter');
     broker.cancel('_onify-extension-on-executed');
+    broker.cancel('_onify-extension-on-listenerstart');
+    broker.cancel('_onify-extension-on-listenerend');
   }
   async _formatOnEnter(broker, formatQ, elementApi) {
     formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
@@ -185,6 +216,9 @@ function getExtensions(element, context) {
   const extensions = element.behaviour.extensionElements?.values;
   if (!extensions) return result;
 
+  const listeners = new ExtensionListeners(element, context);
+
+  let listener = 0;
   for (const ext of extensions) {
     switch (ext.$type) {
       case 'camunda:Properties':
@@ -202,8 +236,13 @@ function getExtensions(element, context) {
         result.Service = Connector.bind(Connector, connectorId, io);
         break;
       }
+      case 'camunda:ExecutionListener':
+        listeners.add(ext, listener++);
+        break;
     }
   }
+
+  if (listeners.length) result.listeners = listeners;
 
   return result;
 }
@@ -211,7 +250,7 @@ function getExtensions(element, context) {
 class FormatActivity {
   constructor(activity) {
     this.activity = activity;
-    this.resultVariable = activity.behaviour.resultVariable || '_' + activity.id;
+    this.resultVariable = activity.behaviour.resultVariable;
 
     let timeCycles;
     if (activity.eventDefinitions) {
@@ -252,7 +291,7 @@ class FormatActivity {
     }
 
     return {
-      resultVariable: this.resultVariable,
+      ...(this.resultVariable && {resultVariable: this.resultVariable}),
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {scheduledStart}),
       ...(user?.length && {candidateUsers: user}),
       ...(groups?.length && {candidateGroups: groups}),
@@ -281,7 +320,6 @@ class FormatProcess {
     if (documentation) description = documentation[0]?.text;
 
     return {
-      resultVariable: this.resultVariable,
       ...(user?.length && {candidateStarterUsers: user}),
       ...(groups?.length && {candidateStarterGroups: groups}),
       ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
@@ -311,11 +349,20 @@ function extendFn(behaviour, context) {
 
   if (!Array.isArray(behaviour.extensionElements?.values)) return;
 
-  const inputOutput = behaviour.extensionElements.values.find((el) => el.$type === 'camunda:InputOutput');
-  const connector = behaviour.extensionElements.values.find((el) => el.$type === 'camunda:Connector');
-
-  if (inputOutput) registerIOScripts(behaviour.id, context, inputOutput.$type, inputOutput);
-  if (connector) registerIOScripts(behaviour.id, context, connector.$type, connector.inputOutput);
+  let listener = 0;
+  for (const extension of behaviour.extensionElements.values) {
+    switch (extension.$type) {
+      case 'camunda:InputOutput':
+        registerIOScripts(behaviour.id, context, extension.$type, extension);
+        break;
+      case 'camunda:Connector':
+        registerIOScripts(behaviour.id, context, extension.$type, extension.inputOutput);
+        break;
+      case 'camunda:ExecutionListener':
+        registerListenerScript(behaviour.id, context, extension.$type, extension, listener++);
+        break;
+    }
+  }
 }
 
 function registerIOScripts(parentId, context, type, ioBehaviour) {
@@ -335,4 +382,17 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
       ...(definition.resource && {resource: definition.resource}),
     });
   }
+}
+
+function registerListenerScript(parentId, context, type, listener, pos) {
+  const {event, script} = listener;
+  if (!script) return;
+
+  const id = `${parentId}/${type}/${event}/${pos}`;
+  context.addScript(id, {
+    id,
+    scriptFormat: script.scriptFormat,
+    ...(script.value && {body: script.value}),
+    ...(script.resource && {resource: script.resource}),
+  });
 }

@@ -1,6 +1,6 @@
 import ck from 'chronokinesis';
-import testHelpers from '../helpers/testHelpers';
-import factory from '../helpers/factory';
+import testHelpers from '../helpers/testHelpers.js';
+import factory from '../helpers/factory.js';
 
 Feature('Flow connector', () => {
   let blueprintSource;

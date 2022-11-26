@@ -1,6 +1,6 @@
 import ck from 'chronokinesis';
-import factory from '../helpers/factory';
-import testHelpers from '../helpers/testHelpers';
+import factory from '../helpers/factory.js';
+import testHelpers from '../helpers/testHelpers.js';
 import {EventEmitter} from 'events';
 
 Feature('BPMN Engine', () => {

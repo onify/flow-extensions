@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.extendFn = extendFn;
 exports.extensions = extensions;
 var _cronParser = _interopRequireDefault(require("cron-parser"));
-var _IOProperties = _interopRequireDefault(require("./src/IOProperties"));
-var _IOForm = _interopRequireDefault(require("./src/IOForm"));
-var _Connector = _interopRequireDefault(require("./src/Connector"));
-var _ServiceExpression = _interopRequireDefault(require("./src/ServiceExpression"));
-var _IO = require("./src/IO");
+var _IOProperties = _interopRequireDefault(require("./src/IOProperties.js"));
+var _IOForm = _interopRequireDefault(require("./src/IOForm.js"));
+var _Connector = _interopRequireDefault(require("./src/Connector.js"));
+var _ServiceExpression = _interopRequireDefault(require("./src/ServiceExpression.js"));
+var _IO = require("./src/IO.js");
+var _ExecutionListeners = _interopRequireDefault(require("./src/ExecutionListeners.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 const iso8601cycle = /^\s*(R\d+\/)?P\w+/i;
 class FormatError extends Error {
@@ -121,11 +122,68 @@ class OnifyElementExtensions {
     }, {
       consumerTag: '_onify-extension-on-executed'
     });
+    const executionListeners = this.extensions.listeners;
+    if (executionListeners !== null && executionListeners !== void 0 && executionListeners.onStart) {
+      activity.on('start', async elementApi => {
+        formatQ.queueMessage({
+          routingKey: 'run.listener.start'
+        }, {
+          endRoutingKey: 'run.listener.start.complete'
+        }, {
+          persistent: false
+        });
+        try {
+          var format = await executionListeners.execute('start', elementApi);
+        } catch (err) {
+          return broker.publish('format', 'run.listener.start.error', {
+            error: err
+          }, {
+            persistent: false
+          });
+        }
+        broker.publish('format', 'run.listener.start.complete', {
+          ...format
+        }, {
+          persistent: false
+        });
+      }, {
+        consumerTag: '_onify-extension-on-listenerstart'
+      });
+    }
+    if (executionListeners !== null && executionListeners !== void 0 && executionListeners.onEnd) {
+      activity.on('end', async elementApi => {
+        formatQ.queueMessage({
+          routingKey: 'run.listener.end'
+        }, {
+          endRoutingKey: 'run.listener.end.complete'
+        }, {
+          persistent: false
+        });
+        try {
+          var format = await executionListeners.execute('end', elementApi);
+        } catch (err) {
+          return broker.publish('format', 'run.listener.end.error', {
+            error: err
+          }, {
+            persistent: false
+          });
+        }
+        broker.publish('format', 'run.listener.end.complete', {
+          ...format
+        }, {
+          persistent: false
+        });
+      }, {
+        consumerTag: '_onify-extension-on-listenerend'
+      });
+    }
   }
   deactivate() {
     const broker = this.activity.broker;
     broker.cancel('_onify-extension-on-enter');
     broker.cancel('_onify-extension-on-executed');
+    broker.cancel('_onify-extension-on-listenerstart');
+    broker.cancel('_onify-extension-on-listenerend');
   }
   async _formatOnEnter(broker, formatQ, elementApi) {
     formatQ.queueMessage({
@@ -165,14 +223,15 @@ class OnifyElementExtensions {
       Object.assign(elementApi.content, result);
     }
     if (io) {
-      if (io.input?.length) {
+      var _io$input, _io$output;
+      if ((_io$input = io.input) !== null && _io$input !== void 0 && _io$input.length) {
         const input = await io.getInput(this.activity, elementApi);
         Object.assign(result, {
           input
         });
         Object.assign(elementApi.content, result);
       }
-      if (io.output?.length) {
+      if ((_io$output = io.output) !== null && _io$output !== void 0 && _io$output.length) {
         result.assignToOutput = true;
       }
     }
@@ -189,7 +248,7 @@ class OnifyElementExtensions {
       io
     } = this.extensions;
     const result = {};
-    if (io?.output.length) {
+    if (io !== null && io !== void 0 && io.output.length) {
       const output = await io.getOutput(this.activity, elementApi);
       Object.assign(result, {
         output
@@ -222,23 +281,26 @@ class OnifyElementExtensions {
   }
 }
 function getExtensions(element, context) {
+  var _element$behaviour$ex, _ext$values, _ext$fields;
   const result = {
     format: element.type === 'bpmn:Process' ? new FormatProcess(element) : new FormatActivity(element)
   };
   const expression = element.behaviour.expression;
   if (expression) result.Service = _ServiceExpression.default;
-  const extensions = element.behaviour.extensionElements?.values;
+  const extensions = (_element$behaviour$ex = element.behaviour.extensionElements) === null || _element$behaviour$ex === void 0 ? void 0 : _element$behaviour$ex.values;
   if (!extensions) return result;
+  const listeners = new _ExecutionListeners.default(element, context);
+  let listener = 0;
   for (const ext of extensions) {
     switch (ext.$type) {
       case 'camunda:Properties':
-        if (ext.values?.length) result.properties = new _IOProperties.default(element, ext);
+        if ((_ext$values = ext.values) !== null && _ext$values !== void 0 && _ext$values.length) result.properties = new _IOProperties.default(element, ext);
         break;
       case 'camunda:InputOutput':
         result.io = new _IO.InputOutput(element.id, ext, context);
         break;
       case 'camunda:FormData':
-        if (ext.fields?.length) result.form = new _IOForm.default(element, ext);
+        if ((_ext$fields = ext.fields) !== null && _ext$fields !== void 0 && _ext$fields.length) result.form = new _IOForm.default(element, ext);
         break;
       case 'camunda:Connector':
         {
@@ -250,14 +312,18 @@ function getExtensions(element, context) {
           result.Service = _Connector.default.bind(_Connector.default, connectorId, io);
           break;
         }
+      case 'camunda:ExecutionListener':
+        listeners.add(ext, listener++);
+        break;
     }
   }
+  if (listeners.length) result.listeners = listeners;
   return result;
 }
 class FormatActivity {
   constructor(activity) {
     this.activity = activity;
-    this.resultVariable = activity.behaviour.resultVariable || '_' + activity.id;
+    this.resultVariable = activity.behaviour.resultVariable;
     let timeCycles;
     if (activity.eventDefinitions) {
       for (const ed of activity.eventDefinitions.filter(e => e.type === 'bpmn:TimerEventDefinition')) {
@@ -269,6 +335,7 @@ class FormatActivity {
     this.timeCycles = timeCycles;
   }
   resolve(elementApi) {
+    var _documentation$, _user, _groups;
     let user, groups, assigneeValue, description;
     const activity = this.activity;
     const {
@@ -281,7 +348,7 @@ class FormatActivity {
     if (candidateUsers) user = resolveAndSplit(elementApi, candidateUsers);
     if (candidateGroups) groups = resolveAndSplit(elementApi, candidateGroups);
     if (assignee) assigneeValue = elementApi.resolveExpression(assignee);
-    if (documentation) description = documentation[0]?.text;
+    if (documentation) description = (_documentation$ = documentation[0]) === null || _documentation$ === void 0 ? void 0 : _documentation$.text;
     let expireAt;
     let timeCycles = this.timeCycles;
     if (timeCycles) {
@@ -293,14 +360,16 @@ class FormatActivity {
       }
     }
     return {
-      resultVariable: this.resultVariable,
+      ...(this.resultVariable && {
+        resultVariable: this.resultVariable
+      }),
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {
         scheduledStart
       }),
-      ...(user?.length && {
+      ...(((_user = user) === null || _user === void 0 ? void 0 : _user.length) && {
         candidateUsers: user
       }),
-      ...(groups?.length && {
+      ...(((_groups = groups) === null || _groups === void 0 ? void 0 : _groups.length) && {
         candidateGroups: groups
       }),
       ...(!elementApi.content.description && description && {
@@ -320,6 +389,7 @@ class FormatProcess {
     this.process = bp;
   }
   resolve(elementApi) {
+    var _documentation$2, _user2, _groups2;
     let user, groups, description;
     const bp = this.process;
     const {
@@ -329,13 +399,12 @@ class FormatProcess {
     } = bp.behaviour;
     if (candidateStarterUsers) user = resolveAndSplit(elementApi, candidateStarterUsers);
     if (candidateStarterGroups) groups = resolveAndSplit(elementApi, candidateStarterGroups);
-    if (documentation) description = documentation[0]?.text;
+    if (documentation) description = (_documentation$2 = documentation[0]) === null || _documentation$2 === void 0 ? void 0 : _documentation$2.text;
     return {
-      resultVariable: this.resultVariable,
-      ...(user?.length && {
+      ...(((_user2 = user) === null || _user2 === void 0 ? void 0 : _user2.length) && {
         candidateStarterUsers: user
       }),
-      ...(groups?.length && {
+      ...(((_groups2 = groups) === null || _groups2 === void 0 ? void 0 : _groups2.length) && {
         candidateStarterGroups: groups
       }),
       ...(!elementApi.content.description && description && {
@@ -353,6 +422,7 @@ function resolveAndSplit(elementApi, str) {
   return resolved.split(',').map(g => g.trim && g.trim().toLowerCase()).filter(Boolean);
 }
 function extendFn(behaviour, context) {
+  var _behaviour$extensionE;
   if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
     const timer = behaviour.eventDefinitions.find(({
       type,
@@ -362,11 +432,21 @@ function extendFn(behaviour, context) {
       scheduledStart: timer.behaviour.timeCycle
     });
   }
-  if (!Array.isArray(behaviour.extensionElements?.values)) return;
-  const inputOutput = behaviour.extensionElements.values.find(el => el.$type === 'camunda:InputOutput');
-  const connector = behaviour.extensionElements.values.find(el => el.$type === 'camunda:Connector');
-  if (inputOutput) registerIOScripts(behaviour.id, context, inputOutput.$type, inputOutput);
-  if (connector) registerIOScripts(behaviour.id, context, connector.$type, connector.inputOutput);
+  if (!Array.isArray((_behaviour$extensionE = behaviour.extensionElements) === null || _behaviour$extensionE === void 0 ? void 0 : _behaviour$extensionE.values)) return;
+  let listener = 0;
+  for (const extension of behaviour.extensionElements.values) {
+    switch (extension.$type) {
+      case 'camunda:InputOutput':
+        registerIOScripts(behaviour.id, context, extension.$type, extension);
+        break;
+      case 'camunda:Connector':
+        registerIOScripts(behaviour.id, context, extension.$type, extension.inputOutput);
+        break;
+      case 'camunda:ExecutionListener':
+        registerListenerScript(behaviour.id, context, extension.$type, extension, listener++);
+        break;
+    }
+  }
 }
 function registerIOScripts(parentId, context, type, ioBehaviour) {
   if (!ioBehaviour) return;
@@ -393,4 +473,22 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
       })
     });
   }
+}
+function registerListenerScript(parentId, context, type, listener, pos) {
+  const {
+    event,
+    script
+  } = listener;
+  if (!script) return;
+  const id = `${parentId}/${type}/${event}/${pos}`;
+  context.addScript(id, {
+    id,
+    scriptFormat: script.scriptFormat,
+    ...(script.value && {
+      body: script.value
+    }),
+    ...(script.resource && {
+      resource: script.resource
+    })
+  });
 }
