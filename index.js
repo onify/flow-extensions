@@ -43,7 +43,7 @@ class OnifyProcessExtensions {
       } catch (err) {
         elementApi.broker.publish('event', 'process.error', {
           ...elementApi.content,
-          error: new FormatError(bp.id, err)
+          error: new FormatError(bp.id, err),
         }, {mandatory: true, type: 'error'});
       }
     }, {consumerTag: '_onify-extension-on-enter'});
@@ -89,6 +89,8 @@ class OnifyElementExtensions {
     }
 
     activity.on('activity.execution.completed', async (elementApi) => {
+      if (activity.isSubProcess && activity.id !== elementApi.id) return;
+
       formatQ.queueMessage({routingKey: 'run.end.format'}, {endRoutingKey: 'run.end.complete'}, {persistent: false});
 
       try {
@@ -103,6 +105,8 @@ class OnifyElementExtensions {
     const executionListeners = this.extensions.listeners;
     if (executionListeners?.onStart) {
       activity.on('start', async (elementApi) => {
+        if (activity.isSubProcess && activity.id !== elementApi.id) return;
+
         formatQ.queueMessage({routingKey: 'run.listener.start'}, {endRoutingKey: 'run.listener.start.complete'}, {persistent: false});
 
         try {
@@ -116,6 +120,8 @@ class OnifyElementExtensions {
     }
     if (executionListeners?.onEnd) {
       activity.on('end', async (elementApi) => {
+        if (activity.isSubProcess && activity.id !== elementApi.id) return;
+
         formatQ.queueMessage({routingKey: 'run.listener.end'}, {endRoutingKey: 'run.listener.end.complete'}, {persistent: false});
 
         try {
@@ -136,6 +142,8 @@ class OnifyElementExtensions {
     broker.cancel('_onify-extension-on-listenerend');
   }
   async _formatOnEnter(broker, formatQ, elementApi) {
+    if (this.activity.isSubProcess && this.activity.id !== elementApi.id) return;
+
     formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
 
     try {
@@ -279,7 +287,7 @@ class FormatActivity {
     if (documentation) description = documentation[0]?.text;
 
     let expireAt;
-    let timeCycles = this.timeCycles;
+    const timeCycles = this.timeCycles;
     if (timeCycles) {
       for (const cycle of timeCycles) {
         const cron = elementApi.resolveExpression(cycle);

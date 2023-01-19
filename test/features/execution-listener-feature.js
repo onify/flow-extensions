@@ -101,6 +101,141 @@ Feature('execution listeners', () => {
     });
   });
 
+  Scenario('Sub process execution listener script', () => {
+    let flow, end;
+    const events = [];
+    When('sub process runs with execution listeners', async () => {
+      const source = `
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="execlisteners" isExecutable="true">
+          <subProcess id="sub">
+            <task id="task">
+              <extensionElements>
+                <camunda:executionListener event="start">
+                  <camunda:script scriptFormat="js">
+                    environment.services.trigger(content.id, 'start');
+                    next();
+                  </camunda:script>
+                </camunda:executionListener>
+                <camunda:executionListener event="end">
+                  <camunda:script scriptFormat="js">
+                    environment.services.trigger(content.id, 'end');
+                    next();
+                  </camunda:script>
+                </camunda:executionListener>
+              </extensionElements>
+            </task>
+            <extensionElements>
+              <camunda:executionListener event="start">
+                <camunda:script scriptFormat="js">
+                  environment.services.trigger(content.id, 'start');
+                  next();
+                </camunda:script>
+              </camunda:executionListener>
+              <camunda:executionListener event="end">
+                <camunda:script scriptFormat="js">
+                  environment.services.trigger(content.id, 'end');
+                  next();
+                </camunda:script>
+              </camunda:executionListener>
+            </extensionElements>
+          </subProcess>
+        </process>
+      </definitions>`;
+      flow = await testHelpers.getOnifyFlow(source, {
+        services: {
+          trigger(id, event) {
+            events.push(id + event);
+          },
+        },
+      });
+      end = flow.waitFor('end');
+      flow.run();
+    });
+
+    Then('run completes triggering sub process execution listeners once', async () => {
+      await end;
+      expect(events).to.deep.equal([
+        'substart',
+        'taskstart',
+        'taskend',
+        'subend',
+      ]);
+    });
+
+    When('multi-instance sub process runs with execution listeners', async () => {
+      const source = `
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="execlisteners" isExecutable="true">
+          <subProcess id="sub">
+            <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.list}" />
+            <task id="task">
+              <extensionElements>
+                <camunda:executionListener event="start">
+                  <camunda:script scriptFormat="js">
+                    environment.services.trigger(content.id, 'start');
+                    next();
+                  </camunda:script>
+                </camunda:executionListener>
+                <camunda:executionListener event="end">
+                  <camunda:script scriptFormat="js">
+                    environment.services.trigger(content.id, 'end');
+                    next();
+                  </camunda:script>
+                </camunda:executionListener>
+              </extensionElements>
+            </task>
+            <extensionElements>
+              <camunda:executionListener event="start">
+                <camunda:script scriptFormat="js">
+                  environment.services.trigger(content.id, 'start');
+                  next();
+                </camunda:script>
+              </camunda:executionListener>
+              <camunda:executionListener event="end">
+                <camunda:script scriptFormat="js">
+                  environment.services.trigger(content.id, 'end');
+                  next();
+                </camunda:script>
+              </camunda:executionListener>
+            </extensionElements>
+          </subProcess>
+        </process>
+      </definitions>`;
+
+      events.splice(0);
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        services: {
+          trigger(id, event) {
+            events.push(id + event);
+          },
+        },
+        variables: {
+          list: [1, 2],
+        },
+      });
+      end = flow.waitFor('end');
+      flow.run();
+    });
+
+    Then('run completes triggering sub process execution listeners once', async () => {
+      await end;
+      expect(events).to.deep.equal([
+        'substart',
+        'taskstart',
+        'taskend',
+        'taskstart',
+        'taskend',
+        'subend',
+      ]);
+    });
+  });
+
   Scenario('Script execution listener throws', () => {
     const source = `
     <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Def_1" targetNamespace="http://bpmn.io/schema/bpmn">
