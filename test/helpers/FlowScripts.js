@@ -14,12 +14,12 @@ class FlowScriptError extends Error {
     Object.defineProperty(this, 'stack', {
       get() {
         return fromErr.stack && fromErr.stack.split('\n').slice(0, 7).join('\n');
-      }
+      },
     });
     Object.defineProperty(this, 'code', {
       get() {
         return 'EFLOW_SCRIPT';
-      }
+      },
     });
   }
   toString() {
@@ -36,12 +36,12 @@ class FlowSyntaxError extends Error {
     Object.defineProperty(this, 'stack', {
       get() {
         return fromErr.stack && fromErr.stack.split('\n').slice(0, 6).join('\n');
-      }
+      },
     });
     Object.defineProperty(this, 'code', {
       get() {
         return 'EFLOW_SCRIPT';
-      }
+      },
     });
   }
   toString() {

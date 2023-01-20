@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = Connector;
-var _Errors = require("./Errors");
+var _Errors = require("./Errors.js");
 function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);
   this.connectorId = connectorId;

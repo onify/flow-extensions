@@ -17,8 +17,8 @@ Feature('Flow connector', () => {
         services: {
           onifyApiRequest(...args) {
             apiCalls.push(args);
-          }
-        }
+          },
+        },
       });
     });
 
@@ -49,7 +49,7 @@ Feature('Flow connector', () => {
         method: 'post',
         query: { tag: 'agent', async: true },
         payload: { vars: [ '-arrSearchConfig user', '-useTemplate' ] },
-        url: '/admin/agents/task/prepareOnifyIndexAD'
+        url: '/admin/agents/task/prepareOnifyIndexAD',
       });
     });
 
@@ -70,11 +70,11 @@ Feature('Flow connector', () => {
           response: JSON.stringify({
             searchConfig: [{
               user: {
-                filePath: '/user.json'
-              }
-            }]
+                filePath: '/user.json',
+              },
+            }],
           }),
-        }
+        },
       });
 
       return start;
@@ -93,7 +93,7 @@ Feature('Flow connector', () => {
         method: 'post',
         query: { tag: 'agent', async: true },
         payload: { vars: [ '/user.json', '0', '1000' ] },
-        url: '/admin/agents/task/readDataFromJsonFile'
+        url: '/admin/agents/task/readDataFromJsonFile',
       });
     });
 
@@ -114,9 +114,9 @@ Feature('Flow connector', () => {
           response: JSON.stringify({
             records: [{
               key: 'user-1',
-            }]
+            }],
           }),
-        }
+        },
       });
 
       return start;
@@ -134,7 +134,7 @@ Feature('Flow connector', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'POST',
         payload: [{ key: 'user-1' }],
-        url: '/admin/bulk/items'
+        url: '/admin/bulk/items',
       });
     });
   });
@@ -166,8 +166,8 @@ Feature('Flow connector', () => {
         services: {
           onifyApiRequest(...args) {
             args.pop()(new Error('Call failed'));
-          }
-        }
+          },
+        },
       });
     });
 
@@ -221,8 +221,8 @@ Feature('Flow connector', () => {
         services: {
           onifyApiRequest(...args) {
             args.pop()(null, {statuscode: 200});
-          }
-        }
+          },
+        },
       });
     });
 
@@ -277,8 +277,8 @@ Feature('Flow connector', () => {
         services: {
           onifyApiRequest(...args) {
             args.pop()();
-          }
-        }
+          },
+        },
       });
     });
 
@@ -322,8 +322,8 @@ Feature('Flow connector', () => {
         services: {
           onifyApiRequest() {
             throw new Error('Something went wrong');
-          }
-        }
+          },
+        },
       });
     });
 
@@ -400,8 +400,8 @@ Feature('Flow connector', () => {
         services: {
           parseJSON(...args) {
             args.pop()();
-          }
-        }
+          },
+        },
       });
     });
 
@@ -504,8 +504,8 @@ Feature('Flow connector', () => {
         services: {
           onifyElevatedApiRequest(...args) {
             apiCalls.push(args);
-          }
-        }
+          },
+        },
       });
     });
 
@@ -561,7 +561,7 @@ Feature('Flow connector', () => {
         output: { statuscode: 201 },
         state: {
           id: 'async-result',
-          result: { done: true, statuscode: 201, user: 'user-1' }
+          result: { done: true, statuscode: 201, user: 'user-1' },
         },
         tag: ['tag-3'],
         empty: [],
