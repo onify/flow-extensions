@@ -43,11 +43,13 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
     if (!definition) continue;
     if (definition.$type !== 'camunda:Script') continue;
 
-    const filename = `${parentId}/${type}/${$type}/${name}`;
+    const ioType = `${type}/${$type}`;
+    const filename = `${parentId}/${ioType}/${name}`;
 
     context.addScript(filename, {
       id: filename,
       scriptFormat: definition.scriptFormat,
+      type: ioType,
       ...(definition.value && {body: definition.value}),
       ...(definition.resource && {resource: definition.resource}),
     });
@@ -62,6 +64,7 @@ function registerListenerScript(parentId, context, type, listener, pos) {
   context.addScript(id, {
     id,
     scriptFormat: script.scriptFormat,
+    type,
     ...(script.value && {body: script.value}),
     ...(script.resource && {resource: script.resource}),
   });
