@@ -4,6 +4,7 @@ Changelog
 # 4.0.0
 
 - make sure sub-process extensions are only triggered once. Sub process activities unintentionally trigger formatting since events bubble
+- add script element type to registered scripts
 - restructure and split up index.js to separate files
 - abide to new lint rules
 

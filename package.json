@@ -35,8 +35,8 @@
   "license": "MIT",
   "devDependencies": {
     "@aircall/expression-parser": "^1.0.4",
-    "@babel/cli": "^7.19.3",
-    "@babel/core": "^7.20.2",
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
@@ -46,15 +46,15 @@
     "c8": "^7.12.0",
     "camunda-bpmn-moddle": "^7.0.1",
     "chai": "^4.3.7",
-    "chronokinesis": "^3.1.2",
+    "chronokinesis": "^4.0.1",
     "debug": "^4.3.4",
-    "eslint": "^8.28.0",
-    "mocha": "^10.1.0",
+    "eslint": "^8.32.0",
+    "mocha": "^10.2.0",
     "mocha-cakes-2": "^3.3.0",
-    "moddle-context-serializer": "^2.1.0"
+    "moddle-context-serializer": "^3.1.1"
   },
   "dependencies": {
-    "cron-parser": "^4.7.0"
+    "cron-parser": "^4.7.1"
   },
   "files": [
     "src",
