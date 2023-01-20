@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Onify Flow extensions",
   "module": "index.js",
   "main": "dist/index.js",
