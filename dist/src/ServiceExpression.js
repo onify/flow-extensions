@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = ServiceExpression;
-var _Errors = require("./Errors");
+var _Errors = require("./Errors.js");
 function ServiceExpression(activity) {
   if (!(this instanceof ServiceExpression)) return new ServiceExpression(activity);
   this.activity = activity;

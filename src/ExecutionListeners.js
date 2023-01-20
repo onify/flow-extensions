@@ -66,7 +66,7 @@ class ScriptListener extends Listener {
     const {
       scriptFormat,
       value,
-      resource
+      resource,
     } = script;
 
     context.environment.scripts.register({
@@ -75,12 +75,12 @@ class ScriptListener extends Listener {
       behaviour: {
         scriptFormat,
         ...(value && {
-          script: value
+          script: value,
         }),
         ...(resource && {
-          resource
-        })
-      }
+          resource,
+        }),
+      },
     });
   }
 }

@@ -131,5 +131,7 @@ HttpRequests.prototype.push = function push(args) {
 };
 
 HttpRequests.prototype.waitFor = function waitFor() {
-  return new Promise((resolve) => this.pending = resolve);
+  return new Promise((resolve) => {
+    this.pending = resolve;
+  });
 };

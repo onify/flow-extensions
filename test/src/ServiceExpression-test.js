@@ -5,8 +5,8 @@ describe('ServiceExpression', () => {
     ServiceExpression({
       type: 'bpmn:ServiceTask',
       behaviour: {
-        expression: '${expr}'
-      }
+        expression: '${expr}',
+      },
     });
   });
 });

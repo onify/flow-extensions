@@ -51,7 +51,7 @@ Feature('BPMN Engine', () => {
         method: 'post',
         query: { tag: 'agent', async: true },
         payload: { vars: [ '-arrSearchConfig user', '-useTemplate' ] },
-        url: '/admin/agents/task/prepareOnifyIndexAD'
+        url: '/admin/agents/task/prepareOnifyIndexAD',
       });
     });
 
@@ -72,11 +72,11 @@ Feature('BPMN Engine', () => {
           response: JSON.stringify({
             searchConfig: [{
               user: {
-                filePath: '/user.json'
-              }
-            }]
+                filePath: '/user.json',
+              },
+            }],
           }),
-        }
+        },
       });
 
       return start;
@@ -95,7 +95,7 @@ Feature('BPMN Engine', () => {
         method: 'post',
         query: { tag: 'agent', async: true },
         payload: { vars: [ '/user.json', '0', '1000' ] },
-        url: '/admin/agents/task/readDataFromJsonFile'
+        url: '/admin/agents/task/readDataFromJsonFile',
       });
     });
 
@@ -116,9 +116,9 @@ Feature('BPMN Engine', () => {
           response: JSON.stringify({
             records: [{
               key: 'user-1',
-            }]
+            }],
           }),
-        }
+        },
       });
 
       return start;
@@ -136,7 +136,7 @@ Feature('BPMN Engine', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'POST',
         payload: [{ key: 'user-1' }],
-        url: '/admin/bulk/items'
+        url: '/admin/bulk/items',
       });
     });
   });

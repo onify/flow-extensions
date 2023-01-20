@@ -1,4 +1,4 @@
-import {NotImplemented} from './Errors';
+import {NotImplemented} from './Errors.js';
 
 export default function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);

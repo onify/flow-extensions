@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.NotImplemented = void 0;
+exports.NotImplemented = exports.FormatError = void 0;
 class NotImplemented extends Error {
   constructor(serviceId) {
     super(`${serviceId} service function not found`);
@@ -14,3 +14,13 @@ class NotImplemented extends Error {
   }
 }
 exports.NotImplemented = NotImplemented;
+class FormatError extends Error {
+  constructor(elementId, err) {
+    super(`<${elementId}> ${err.message}`);
+    this.code = 'EFLOW_FORMAT';
+    this.output = {
+      statusCode: 500
+    };
+  }
+}
+exports.FormatError = FormatError;

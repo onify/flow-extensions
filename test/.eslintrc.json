@@ -4,6 +4,9 @@
     "mocha": true,
     "node": true
   },
+  "rules": {
+    "no-unused-expressions": 0
+  },
   "globals": {
     "expect": false,
     "Feature": false,
