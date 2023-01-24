@@ -101,7 +101,7 @@ Feature('execution listeners', () => {
     });
   });
 
-  Scenario('Sub process execution listener script', () => {
+  Scenario('Sub process execution listener script with output parameter', () => {
     let flow, end;
     const events = [];
     When('sub process runs with execution listeners', async () => {
@@ -113,6 +113,9 @@ Feature('execution listeners', () => {
           <subProcess id="sub">
             <task id="task">
               <extensionElements>
+                <camunda:inputOutput>
+                  <camunda:outputParameter name="taskresult">\${true}</camunda:outputParameter>
+                </camunda:inputOutput>
                 <camunda:executionListener event="start">
                   <camunda:script scriptFormat="js">
                     environment.services.trigger(content.id, 'start');
@@ -128,6 +131,9 @@ Feature('execution listeners', () => {
               </extensionElements>
             </task>
             <extensionElements>
+              <camunda:inputOutput>
+                <camunda:outputParameter name="result">\${content.output.taskresult}</camunda:outputParameter>
+              </camunda:inputOutput>
               <camunda:executionListener event="start">
                 <camunda:script scriptFormat="js">
                   environment.services.trigger(content.id, 'start');
@@ -136,6 +142,7 @@ Feature('execution listeners', () => {
               </camunda:executionListener>
               <camunda:executionListener event="end">
                 <camunda:script scriptFormat="js">
+                  environment.output.endlistener = true;
                   environment.services.trigger(content.id, 'end');
                   next();
                 </camunda:script>
@@ -165,6 +172,10 @@ Feature('execution listeners', () => {
       ]);
     });
 
+    And('sub process output is expected', () => {
+      expect(flow.environment.output).to.deep.equal({result: true, endlistener: true});
+    });
+
     When('multi-instance sub process runs with execution listeners', async () => {
       const source = `
       <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -175,6 +186,9 @@ Feature('execution listeners', () => {
             <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.list}" />
             <task id="task">
               <extensionElements>
+                <camunda:inputOutput>
+                  <camunda:outputParameter name="taskresult">\${environment.variables.content.item}</camunda:outputParameter>
+                </camunda:inputOutput>
                 <camunda:executionListener event="start">
                   <camunda:script scriptFormat="js">
                     environment.services.trigger(content.id, 'start');
@@ -198,6 +212,7 @@ Feature('execution listeners', () => {
               </camunda:executionListener>
               <camunda:executionListener event="end">
                 <camunda:script scriptFormat="js">
+                  environment.output.subprocess = content.output;
                   environment.services.trigger(content.id, 'end');
                   next();
                 </camunda:script>
@@ -233,6 +248,16 @@ Feature('execution listeners', () => {
         'taskend',
         'subend',
       ]);
+    });
+
+    And('multi-instance sub process output is expected', () => {
+      expect(flow.environment.output).to.deep.equal({
+        subprocess: [{
+          taskresult: 1,
+        }, {
+          taskresult: 2,
+        }],
+      });
     });
   });
 
