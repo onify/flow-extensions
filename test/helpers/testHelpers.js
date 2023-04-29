@@ -32,7 +32,7 @@ async function getOnifyFlow(source, options) {
     for (const w of moddle.warnings) logger.warn(w);
   }
 
-  const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
+  const serialized = Serializer(moddle, TypeResolver({...Elements, ...options?.types}), extendFn);
   return new Elements.Definition(new Elements.Context(serialized), {
     ...getFlowOptions(serialized.name || serialized.id),
     ...options,
@@ -47,6 +47,7 @@ async function getEngine(name, source, options) {
     extensions: {onify: extensions},
     ...getFlowOptions(name),
     ...options,
+    elements: {...Elements, ...options?.elements},
   });
 }
 

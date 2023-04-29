@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 4.1.0
+
+- Support sequence flow properties and take execution listener. Requires `bpmn-elements >= 9.2`
+
 # 4.0.0
 
 - make sure sub-process extensions are only triggered once. Sub process activities unintentionally trigger formatting since events bubble

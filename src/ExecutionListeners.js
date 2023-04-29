@@ -49,6 +49,8 @@ class ScriptListener extends Listener {
   execute(api) {
     const environment = this.environment;
     const scope = this._getScope(api, {id: this.id, resolveExpression});
+    const listenerFields = this._getFields(environment, scope);
+    if (listenerFields) scope.listener.fields = listenerFields;
     const script = this.environment.scripts.getScript(this.extension.scriptFormat, {id: this.id});
 
     return new Promise((resolve, reject) => {
@@ -97,22 +99,26 @@ export default class ExecutionListeners {
     this.activity = activity;
     this.context = context;
     this.listeners = [];
-    this.onStart = false;
-    this.onEnd = false;
   }
   get length() {
     return this.listeners.length;
   }
+  get onStart() {
+    return this.listeners.some((l) => l.event === 'start');
+  }
+  get onEnd() {
+    return this.listeners.some((l) => l.event === 'end');
+  }
+  get onTake() {
+    return this.listeners.some((l) => l.event === 'take');
+  }
   add(extension, pos) {
-    const {event, script, expression} = extension;
+    const {script, expression} = extension;
     if (!script && !expression) return;
 
     const list = this.listeners;
     if (script && (script.value || script.resource)) list.push(new ScriptListener(this.activity, this.context, extension, pos));
     else if (expression) list.push(new ExpressionListener(this.activity, this.context, extension));
-
-    if (event === 'start') this.onStart = true;
-    if (event === 'end') this.onEnd = true;
   }
   async execute(event, message) {
     const found = this.listeners.filter((l) => l.event === event);

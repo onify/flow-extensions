@@ -7,7 +7,7 @@ Feature('Flow scripts', () => {
       const source = `<?xml version="1.0" encoding="UTF-8"?>
       <definitions id="execution-error" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
         <process id="my-process" isExecutable="true">
-          <scriptTask id="script">
+          <scriptTask id="script" scriptFormat="js">
             <script>
               Buffer.from('a');
               encrypt();

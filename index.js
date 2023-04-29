@@ -1,9 +1,11 @@
 import {OnifyProcessExtensions} from './src/OnifyProcessExtensions.js';
 import {OnifyElementExtensions} from './src/OnifyElementExtensions.js';
+import {OnifySequenceFlow} from './src/OnifySequenceFlow.js';
 
 export {
   extensions,
   extendFn,
+  OnifySequenceFlow,
 };
 
 function extensions(element, context) {

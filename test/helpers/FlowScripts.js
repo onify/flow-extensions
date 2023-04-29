@@ -81,7 +81,7 @@ FlowScripts.prototype.register = function register({id, type, behaviour}) {
     }
   }
 
-  if (!language) language = 'javascript';
+  if (!language) return;
 
   if (!['js', 'javascript'].includes(language.toLowerCase().trim())) return;
 

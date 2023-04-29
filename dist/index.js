@@ -3,10 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "OnifySequenceFlow", {
+  enumerable: true,
+  get: function () {
+    return _OnifySequenceFlow.OnifySequenceFlow;
+  }
+});
 exports.extendFn = extendFn;
 exports.extensions = extensions;
 var _OnifyProcessExtensions = require("./src/OnifyProcessExtensions.js");
 var _OnifyElementExtensions = require("./src/OnifyElementExtensions.js");
+var _OnifySequenceFlow = require("./src/OnifySequenceFlow.js");
 function extensions(element, context) {
   if (element.type === 'bpmn:Process') return new _OnifyProcessExtensions.OnifyProcessExtensions(element, context);
   return new _OnifyElementExtensions.OnifyElementExtensions(element, context);

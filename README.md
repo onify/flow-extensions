@@ -120,3 +120,92 @@ function getModdleContext(source, options) {
   return bpmnModdle.fromXML(Buffer.isBuffer(source) ? source.toString() : source.trim());
 }
 ```
+
+## Extend sequence flow with properties and take listeners
+
+```js
+const {OnifySequenceFlow, extensions} = require('@onify/flow-extensions');
+const FlowScripts = require('@onify/flow-extensions/dist/src/FlowScripts');
+const {Engine} = require('bpmn-engine');
+const Elements = require('bpmn-elements');
+
+const source = `
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  id="Def_0"
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <process id="Process_1kk79yr" isExecutable="true">
+    <startEvent id="start" />
+    <sequenceFlow id="to-script" sourceRef="start" targetRef="script">
+      <extensionElements>
+        <camunda:properties>
+          <camunda:property name="source" value="\${content.id}" />
+        </camunda:properties>
+        <camunda:executionListener event="take">
+          <camunda:script scriptFormat="js">environment.output.fields = listener.fields; next();</camunda:script>
+          <camunda:field name="taken">
+            <camunda:expression>\${true}</camunda:expression>
+          </camunda:field>
+          <camunda:field name="bar">
+            <camunda:string>baz</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+      </extensionElements>
+    </sequenceFlow>
+    <sequenceFlow id="to-end" sourceRef="script" targetRef="end">
+      <extensionElements>
+        <camunda:properties>
+          <camunda:property name="foo" value="bar" />
+        </camunda:properties>
+      </extensionElements>
+    </sequenceFlow>
+    <scriptTask id="script" name="script" scriptFormat="js">
+      <script>next(null, { foo: environment.variables.required.input });</script>
+    </scriptTask>
+    <boundaryEvent id="catch-err" attachedToRef="script">
+      <errorEventDefinition />
+    </boundaryEvent>
+    <endEvent id="end-err">
+      <extensionElements>
+        <camunda:executionListener event="start">
+          <camunda:script scriptFormat="js">
+            environment.output.failedBy = content.inbound[0].properties.error;
+            if (next) next();
+          </camunda:script>
+        </camunda:executionListener>
+      </extensionElements>
+    </endEvent>
+    <sequenceFlow id="to-end-err" sourceRef="catch-err" targetRef="end-err">
+      <extensionElements>
+        <camunda:properties>
+          <camunda:property name="error" value="\${content.output}" />
+        </camunda:properties>
+      </extensionElements>
+    </sequenceFlow>
+    <endEvent id="end" />
+  </process>
+</definitions>`;
+
+const engine = new Engine({
+  name: 'sequence flow extension',
+  source,
+  moddleOptions: {
+    camunda: require('camunda-bpmn-moddle/resources/camunda.json'),
+  },
+  extensions: {
+    onify: extensions,
+  },
+  scripts: new FlowScripts('sequence flow extension'),
+  elements: {
+    ...Elements,
+    SequenceFlow: OnifySequenceFlow,
+  },
+});
+
+engine.execute((err, instance) => {
+  if (err) throw err;
+  console.log(instance.name, instance.environment.output);
+});
+```

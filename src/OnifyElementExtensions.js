@@ -13,6 +13,7 @@ export class OnifyElementExtensions {
     const activity = this.activity;
     const broker = activity.broker;
     const formatQ = activity.broker.getQueue('format-run-q');
+    const executionListeners = this.extensions.listeners;
 
     if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
       activity.on('start', (elementApi) => {
@@ -38,7 +39,6 @@ export class OnifyElementExtensions {
       broker.publish('format', 'run.end.complete', {...format}, {persistent: false});
     }, {consumerTag: '_onify-extension-on-executed'});
 
-    const executionListeners = this.extensions.listeners;
     if (executionListeners?.onStart) {
       activity.on('start', async (elementApi) => {
         if (activity.isSubProcess && activity.id !== elementApi.id) return;
@@ -137,12 +137,12 @@ export class OnifyElementExtensions {
 
     const {output, assignToOutput, resultVariable} = elementApi.content;
 
-    if (output === undefined || output === null) return result;
-
-    if (assignToOutput && typeof output === 'object') {
-      Object.assign(this.activity.environment.output, output);
-    } else if (resultVariable) {
-      elementApi.environment.output[resultVariable] = output;
+    if (output !== undefined && output !== null) {
+      if (assignToOutput && typeof output === 'object') {
+        Object.assign(this.activity.environment.output, output);
+      } else if (resultVariable) {
+        elementApi.environment.output[resultVariable] = output;
+      }
     }
 
     return result;

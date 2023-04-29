@@ -80,7 +80,7 @@ FlowScripts.prototype.register = function register({
         resource = behaviour.resource;
       }
   }
-  if (!language) language = 'javascript';
+  if (!language) return;
   if (!['js', 'javascript'].includes(language.toLowerCase().trim())) return;
   language = 'javascript';
   const name = this._name;

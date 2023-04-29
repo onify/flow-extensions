@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1tljnp0" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.8.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.18.0">
+  <bpmn:process id="Process_1kk79yr" isExecutable="true">
+    <bpmn:startEvent id="start">
+      <bpmn:outgoing>to-script</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="end">
+      <bpmn:incoming>to-end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to-script" sourceRef="start" targetRef="script">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="source" value="${content.id}" />
+        </camunda:properties>
+        <camunda:executionListener event="take">
+          <camunda:script scriptFormat="js">environment.output.fields = listener.fields;
+next();</camunda:script>
+          <camunda:field name="taken">
+            <camunda:expression>${true}</camunda:expression>
+          </camunda:field>
+          <camunda:field name="bar">
+            <camunda:string>baz</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="to-end" sourceRef="script" targetRef="end">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="foo" value="bar" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:scriptTask id="script" name="script" scriptFormat="js">
+      <bpmn:extensionElements />
+      <bpmn:incoming>to-script</bpmn:incoming>
+      <bpmn:outgoing>to-end</bpmn:outgoing>
+      <bpmn:script>next(null, { foo: environment.variables.required.input });</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:boundaryEvent id="catch-err" attachedToRef="script">
+      <bpmn:extensionElements />
+      <bpmn:outgoing>to-end-err</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_08r536r" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="end-err">
+      <bpmn:extensionElements>
+        <camunda:executionListener event="start">
+          <camunda:script scriptFormat="js">environment.output.failedBy = content.inbound[0].properties.error;
+next();</camunda:script>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+      <bpmn:incoming>to-end-err</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to-end-err" sourceRef="catch-err" targetRef="end-err">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="error" value="${content.output}" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1kk79yr">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_16nzolo_di" bpmnElement="end">
+        <dc:Bounds x="402" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mkd3l8_di" bpmnElement="script">
+        <dc:Bounds x="260" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1kgbjga_di" bpmnElement="end-err">
+        <dc:Bounds x="382" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_17sey27_di" bpmnElement="catch-err">
+        <dc:Bounds x="292" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1dhj0n4_di" bpmnElement="to-script">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="260" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0byvlpa_di" bpmnElement="to-end">
+        <di:waypoint x="360" y="117" />
+        <di:waypoint x="402" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0x197ft_di" bpmnElement="to-end-err">
+        <di:waypoint x="310" y="175" />
+        <di:waypoint x="310" y="240" />
+        <di:waypoint x="382" y="240" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -4,7 +4,7 @@
     "ecmaVersion": 2020
   },
   "env": {
-    "node": false,
+    "shared-node-browser": true,
     "es6": true
   },
   "extends": "eslint:recommended",
