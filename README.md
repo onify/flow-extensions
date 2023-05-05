@@ -1,7 +1,7 @@
 Onify Flow Extensions
 =====================
 
-[![Built latest](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml/badge.svg)](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml)
+[![Built latest](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml/badge.svg)](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml)[![Coverage Status](https://coveralls.io/repos/github/onify/flow-extensions/badge.svg?branch=default)](https://coveralls.io/github/onify/flow-extensions?branch=default)
 
 # Api
 
