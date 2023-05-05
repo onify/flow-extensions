@@ -16,7 +16,6 @@
     "posttest": "npm run lint && npm run dist",
     "lint": "eslint . --cache",
     "prepare": "npm run dist",
-    "predist": "node -e \"fs.rmdirSync('./dist', {recursive: true});\"",
     "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
     "test:lcov": "c8 -r lcov mocha && npm run lint",
     "cov:html": "c8 mocha -R dot && c8 report --reporter html"
