@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 5.0.1
+
+- Doh! Add neglected package.json file to common js dist folder
+
 # 5.0.0
 
 - Turn into module with exports for node
