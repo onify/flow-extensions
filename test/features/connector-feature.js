@@ -468,7 +468,7 @@ Feature('Flow connector', () => {
                   <camunda:script scriptFormat="js">next(null, {id: content.id, result: {done: false, error: false}});</camunda:script>
                 </camunda:inputParameter>
                 <camunda:inputParameter name="status">
-                  <camunda:script scriptFormat="js" resource="./io-script.js" />
+                  <camunda:script scriptFormat="js" resource="./io-script.fjs" />
                 </camunda:inputParameter>
                 <camunda:outputParameter name="output">\${content.output.result}</camunda:outputParameter>
                 <camunda:outputParameter name="state">

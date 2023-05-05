@@ -1,6 +1,6 @@
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
 import {Engine} from 'bpmn-engine';
-import {extensions, extendFn} from '../../index.js';
+import {extensions, extendFn} from '../../src/index.js';
 import {FlowScripts} from './FlowScripts.js';
 import {promises as fs} from 'fs';
 import * as Elements from 'bpmn-elements';

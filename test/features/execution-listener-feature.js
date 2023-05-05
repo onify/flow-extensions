@@ -1,5 +1,5 @@
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendFn} from '../../index.js';
+import {extendFn} from '../../src/index.js';
 import * as Elements from 'bpmn-elements';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
@@ -55,7 +55,7 @@ Feature('execution listeners', () => {
         type: 'bpmn:EndEvent',
       });
       expect(registered[1].script).to.have.property('scriptFormat', 'js');
-      expect(registered[1].script).to.have.property('resource', './listener-script.js');
+      expect(registered[1].script).to.have.property('resource', './listener-script.fjs');
     });
 
     And('registered task execution listener scripts', () => {
@@ -274,7 +274,7 @@ Feature('execution listeners', () => {
         <bpmn:task id="task">
           <bpmn:extensionElements>
             <camunda:executionListener event="start">
-              <camunda:script scriptFormat="js" resource="./listener-script.js" />
+              <camunda:script scriptFormat="js" resource="./listener-script.fjs" />
             </camunda:executionListener>
           </bpmn:extensionElements>
         </bpmn:task>
@@ -291,7 +291,7 @@ Feature('execution listeners', () => {
 
     Then('execution listeners throws', async () => {
       const err = (await error).content.error;
-      expect(err.inner.toString()).to.contain('Def_1/camunda:ExecutionListener/task/camunda:Script/start/0/./listener-script.js');
+      expect(err.inner.toString()).to.contain('Def_1/camunda:ExecutionListener/task/camunda:Script/start/0/./listener-script.fjs');
     });
   });
 

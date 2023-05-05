@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 5.0.0
+
+- Turn into module with exports for node
+- Add type declaration
+
 # 4.1.0
 
 - Support sequence flow properties and take execution listener. Requires `bpmn-elements >= 9.2`

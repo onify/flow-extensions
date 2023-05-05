@@ -8,13 +8,10 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
-
+        node-version: [ 14, 16, 18, latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,4 +20,19 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm i
-      - run: npm test -- -t 3000
+      - run: npm run test:lcov
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: run-${{ matrix.node-version }}
+          parallel: true
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true

@@ -1,6 +1,6 @@
-import {OnifyProcessExtensions} from './src/OnifyProcessExtensions.js';
-import {OnifyElementExtensions} from './src/OnifyElementExtensions.js';
-import {OnifySequenceFlow} from './src/OnifySequenceFlow.js';
+import {OnifyProcessExtensions} from './OnifyProcessExtensions.js';
+import {OnifyElementExtensions} from './OnifyElementExtensions.js';
+import {OnifySequenceFlow} from './OnifySequenceFlow.js';
 
 export {
   extensions,

@@ -1,20 +1,24 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "Onify Flow extensions",
+  "type": "module",
   "module": "index.js",
   "main": "dist/index.js",
+  "types": "./index.d.ts",
   "sideEffects": false,
-  "directories": {
-    "test": "test"
+  "exports": {
+    "import": "./src/index.js",
+    "require": "./dist/index.js"
   },
   "scripts": {
-    "test": "mocha",
-    "posttest": "npm run dist && eslint . --cache",
+    "test": "mocha -R dot",
+    "posttest": "npm run lint && npm run dist",
+    "lint": "eslint . --cache",
     "prepare": "npm run dist",
-    "predist": "node -e \"fs.rmdirSync('./dist/src', {recursive: true});\"",
-    "dist": "babel index.js -d dist && babel src -d dist/src && babel test/helpers/FlowScripts.js -d dist/src",
-    "test:lcov": "c8 mocha -R dot && c8 report --reporter lcov && npm run posttest",
+    "predist": "node -e \"fs.rmdirSync('./dist', {recursive: true});\"",
+    "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
+    "test:lcov": "c8 -r lcov mocha && npm run lint",
     "cov:html": "c8 mocha -R dot && c8 report --reporter html"
   },
   "keywords": [
@@ -58,16 +62,15 @@
   },
   "files": [
     "src",
-    "index.js",
-    "dist/src",
-    "dist/index.js"
+    "dist",
+    "index.d.ts"
   ],
   "c8": {
     "exclude": [
       "dist",
       "test",
-      ".mocharc.js",
-      "babel.config.js"
+      ".mocharc.cjs",
+      "babel.config.cjs"
     ]
   }
 }
