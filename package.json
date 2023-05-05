@@ -39,7 +39,7 @@
   "devDependencies": {
     "@aircall/expression-parser": "^1.0.4",
     "@babel/cli": "^7.21.5",
-    "@babel/core": "^7.21.5",
+    "@babel/core": "^7.21.8",
     "@babel/preset-env": "^7.21.5",
     "@babel/register": "^7.21.0",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
