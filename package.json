@@ -1,9 +1,9 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Onify Flow extensions",
   "type": "module",
-  "module": "index.js",
+  "module": "src/index.js",
   "main": "dist/index.js",
   "types": "./index.d.ts",
   "sideEffects": false,

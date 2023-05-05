@@ -1,6 +1,10 @@
 Changelog
 =========
 
+# 5.0.2
+
+- Correct package module file...
+
 # 5.0.1
 
 - Doh! Add neglected package.json file to common js dist folder
