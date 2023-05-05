@@ -1,6 +1,6 @@
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
-import {OnifySequenceFlow} from '../../index.js';
+import {OnifySequenceFlow} from '../../src/index.js';
 
 class Logger {
   constructor() {

@@ -2,7 +2,7 @@ import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
 import * as Elements from 'bpmn-elements';
 import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendFn} from '../../index.js';
+import {extendFn} from '../../src/index.js';
 
 Feature('Extend function', () => {
   let blueprintSource;

@@ -33,7 +33,7 @@ next();</camunda:script>
           </camunda:field>
         </camunda:executionListener>
         <camunda:executionListener event="end">
-          <camunda:script scriptFormat="js" resource="./listener-script.js" />
+          <camunda:script scriptFormat="js" resource="./listener-script.fjs" />
           <camunda:field name="success">
             <camunda:expression>${true}</camunda:expression>
           </camunda:field>
