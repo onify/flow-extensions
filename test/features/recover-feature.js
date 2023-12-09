@@ -1,4 +1,5 @@
 import testHelpers from '../helpers/testHelpers.js';
+import factory from '../helpers/factory.js';
 
 Feature('Recover flow', () => {
   Scenario('A flow is recovered with output parameters', () => {
@@ -552,6 +553,68 @@ Feature('Recover flow', () => {
 
     And('async end formatting is set', () => {
       expect(flow.environment.output).to.have.property('result').that.deep.equal({ id: 'service', foo: 'bar', statuscode: 200 });
+    });
+  });
+
+  Scenario('recover different versions where elements has disappeared', () => {
+    let sourceV1, sourceV2, flow, options;
+    const serviceCalls = [];
+    Given('version 1 of a process with user tasks and a variety of elements', async () => {
+      sourceV1 = factory.resource('mother-of-all.bpmn');
+
+      options = {
+        services: {
+          onifyApiRequest(...args) {
+            serviceCalls.push(args);
+            args.pop()(null, { statuscode: 200 });
+          },
+        },
+      };
+
+      flow = await testHelpers.getOnifyFlow(sourceV1, options);
+    });
+
+    And('a second version where almost everything has disappeared', () => {
+      sourceV2 = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Double-timer-issue" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="motherOfAll" isExecutable="true">
+          <startEvent id="start" />
+          <sequenceFlow id="to-userTask1" sourceRef="start" targetRef="userTask1" />
+          <userTask id="userTask1" />
+          <sequenceFlow id="to-end" sourceRef="userTask1" targetRef="end" />
+          <endEvent id="end" />
+        </process>
+      </definitions>`;
+    });
+
+    let execution, started;
+    When('started', async () => {
+      started = flow.waitFor('activity.start');
+      execution = await flow.run();
+    });
+
+    let state;
+    And('state is saved immediately after start', async () => {
+      await started;
+      await execution.stop();
+
+      state = await flow.getState();
+    });
+
+    let end;
+    When('definition recovered and resumed with second version', async () => {
+      flow = await testHelpers.recoverOnifyFlow(sourceV2, state, options);
+      end = flow.waitFor('end');
+      execution = await flow.resume();
+    });
+
+    And('pending task is signaled', () => {
+      const [pendingTask] = flow.getPostponed();
+      pendingTask.signal();
+    });
+
+    Then('flow run completes', () => {
+      return end;
     });
   });
 });

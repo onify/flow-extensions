@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 6.0.0
+
+- Require peer dependency `bpmn-elements >= 8`
+- Support timer event definition cron time cycle by overloading parse function. Requires `bpmn-elements >= 10`
+
 # 5.0.2
 
 - Correct package module file...

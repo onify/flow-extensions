@@ -10,6 +10,7 @@ export class FormatActivity {
     let timeCycles;
     if (activity.eventDefinitions) {
       for (const ed of activity.eventDefinitions.filter((e) => e.type === 'bpmn:TimerEventDefinition')) {
+        if (ed.supports?.includes('cron')) continue;
         if (!('timeCycle' in ed)) continue;
         timeCycles = timeCycles || [];
         timeCycles.push(ed.timeCycle);

@@ -1,19 +1,14 @@
-import {OnifyProcessExtensions} from './OnifyProcessExtensions.js';
-import {OnifyElementExtensions} from './OnifyElementExtensions.js';
-import {OnifySequenceFlow} from './OnifySequenceFlow.js';
+import { OnifyProcessExtensions } from './OnifyProcessExtensions.js';
+import { OnifyElementExtensions } from './OnifyElementExtensions.js';
+export { OnifySequenceFlow } from './OnifySequenceFlow.js';
+export { OnifyTimerEventDefinition } from './OnifyTimerEventDefinition.js';
 
-export {
-  extensions,
-  extendFn,
-  OnifySequenceFlow,
-};
-
-function extensions(element, context) {
+export function extensions(element, context) {
   if (element.type === 'bpmn:Process') return new OnifyProcessExtensions(element, context);
   return new OnifyElementExtensions(element, context);
 }
 
-function extendFn(behaviour, context) {
+export function extendFn(behaviour, context) {
   if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
     const timer = behaviour.eventDefinitions.find(({type, behaviour: edBehaviour}) => edBehaviour && type === 'bpmn:TimerEventDefinition');
     if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});

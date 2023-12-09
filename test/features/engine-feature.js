@@ -1,4 +1,4 @@
-import ck from 'chronokinesis';
+import * as ck from 'chronokinesis';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
 import {EventEmitter} from 'events';

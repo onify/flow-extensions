@@ -22,6 +22,9 @@ next();</camunda:script>
             <camunda:string>baz</camunda:string>
           </camunda:field>
         </camunda:executionListener>
+        <camunda:executionListener event="take">
+          <camunda:script scriptFormat="js" resource="./my-script.js" />
+        </camunda:executionListener>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="to-end" sourceRef="script" targetRef="end">

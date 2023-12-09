@@ -1,4 +1,4 @@
-import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
+import {Serializer, TypeResolver} from 'moddle-context-serializer';
 import {extendFn} from '../../src/index.js';
 import * as Elements from 'bpmn-elements';
 import factory from '../helpers/factory.js';

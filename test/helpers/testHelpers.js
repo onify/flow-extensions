@@ -1,4 +1,4 @@
-import {default as Serializer, TypeResolver} from 'moddle-context-serializer';
+import {Serializer, TypeResolver} from 'moddle-context-serializer';
 import {Engine} from 'bpmn-engine';
 import {extensions, extendFn} from '../../src/index.js';
 import {FlowScripts} from './FlowScripts.js';
@@ -33,10 +33,7 @@ async function getOnifyFlow(source, options) {
   }
 
   const serialized = Serializer(moddle, TypeResolver({...Elements, ...options?.types}), extendFn);
-  return new Elements.Definition(new Elements.Context(serialized), {
-    ...getFlowOptions(serialized.name || serialized.id),
-    ...options,
-  });
+  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, options));
 }
 
 async function getEngine(name, source, options) {
@@ -44,9 +41,7 @@ async function getEngine(name, source, options) {
     name,
     source,
     moddleOptions: await getModdleExtensions(),
-    extensions: {onify: extensions},
-    ...getFlowOptions(name),
-    ...options,
+    ...getFlowOptions(name, options),
     elements: {...Elements, ...options?.elements},
   });
 }
@@ -54,22 +49,20 @@ async function getEngine(name, source, options) {
 async function recoverOnifyFlow(source, state, options) {
   const moddle = await moddleContext(source, await getModdleExtensions());
   const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
-  return new Elements.Definition(new Elements.Context(serialized), {
-    ...getFlowOptions(state.name || state.id),
-    ...options,
-  }).recover(state);
+  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(state.name || state.id, options)).recover(state);
 }
 
-function getFlowOptions(name, options) {
+function getFlowOptions(name, options = {}) {
+  const {extensions: extensionsOption, services, ...rest} = options;
   return {
     Logger,
-    extensions: {extensions},
+    extensions: {...extensionsOption, onify: extensions},
     services: {
       httpRequest() {},
       onifyApiRequest() {},
       onifyElevatedApiRequest() {},
       parseJSON() {},
-      ...options?.services,
+      ...services,
     },
     scripts: new FlowScripts(name, './test/resources', {
       encrypt() {},
@@ -80,6 +73,7 @@ function getFlowOptions(name, options) {
       },
     }),
     expressions,
+    ...rest,
   };
 }
 

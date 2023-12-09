@@ -1,6 +1,8 @@
-import ck from 'chronokinesis';
+import * as ck from 'chronokinesis';
+
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
+import {OnifyTimerEventDefinition} from '../../src/OnifyTimerEventDefinition.js';
 
 Feature('Flow timers', () => {
   let blueprintSource;
@@ -39,6 +41,38 @@ Feature('Flow timers', () => {
     Then('flow continues run', () => {
       [element] = flow.getPostponed();
       expect(element.type).to.equal('bpmn:ServiceTask');
+    });
+
+    describe('using OnifyTimerEventDefinition', () => {
+      When('started with extended TimerEventDefinition', async () => {
+        flow = await testHelpers.getOnifyFlow(blueprintSource, {
+          types: {
+            TimerEventDefinition: OnifyTimerEventDefinition,
+          },
+        });
+
+        ck.freeze(Date.UTC(2022, 1, 14, 12, 0));
+        flow.run();
+      });
+
+      Then('run is paused at start event', () => {
+        [element] = flow.getPostponed();
+        expect(element.type).to.equal('bpmn:StartEvent');
+      });
+
+      And('a timer is registered', () => {
+        [timer] = flow.environment.timers.executing;
+        expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
+      });
+
+      When('cron start event is cancelled', () => {
+        flow.cancelActivity({id: element.id});
+      });
+
+      Then('flow continues run', () => {
+        [element] = flow.getPostponed();
+        expect(element.type).to.equal('bpmn:ServiceTask');
+      });
     });
   });
 

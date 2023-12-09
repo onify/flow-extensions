@@ -132,4 +132,193 @@ Feature('Flow process', () => {
       expect(err.content.error).to.match(/Parser Error/i);
     });
   });
+
+  Scenario('Process with candidate starter groups and users in various formats', () => {
+    let source, flow;
+    Given('a flow with candidate groups as string split by comma with empty and blanks', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true" camunda:candidateStarterGroups="admins,, users, ,," camunda:candidateStarterUsers="admin">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    let started;
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have groups in lowercase without empty', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.have.property('candidateStarterGroups').that.deep.equal(['admins', 'users']);
+      bp.stop();
+    });
+
+    Given('a flow with candidate groups expression referencing an environment array', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true" camunda:candidateStarterGroups="\${environment.settings.groups}">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        settings: {
+          groups: ['admins', '', false, 'USERS'],
+        },
+      });
+    });
+
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have groups in without empty', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.have.property('candidateStarterGroups').that.deep.equal(['admins', 'USERS']);
+      bp.stop();
+    });
+
+    Given('a flow with candidate groups expression referencing an environment object', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true" camunda:candidateStarterGroups="\${environment.settings.groups}">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        settings: {
+          groups: {foo: 'bar'},
+        },
+      });
+    });
+
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have NO groups since type is not accepted', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.not.have.property('candidateStarterGroups');
+      bp.stop();
+    });
+
+    Given('a flow ran with extension that sets candidate groups to string', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        extensions: {
+          myExtension(bp) {
+            if (bp.type !== 'bpmn:Process') return;
+            bp.behaviour.candidateStarterGroups = 'admin';
+            return {
+              activate() {},
+              deactivate() {},
+            };
+          },
+        },
+      });
+    });
+
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have groups', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.have.property('candidateStarterGroups').that.deep.equal(['admin']);
+      bp.stop();
+    });
+
+    Given('a flow ran with extension that sets candidate groups to array', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        extensions: {
+          myExtension(bp) {
+            if (bp.type !== 'bpmn:Process') return;
+            bp.behaviour.candidateStarterGroups = ['admin', '', 'Users'];
+            return {
+              activate() {},
+              deactivate() {},
+            };
+          },
+        },
+      });
+    });
+
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have groups', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.have.property('candidateStarterGroups').that.deep.equal(['admin', 'Users']);
+      bp.stop();
+    });
+
+    Given('a flow ran with extension that sets candidate groups to an object', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <userTask id="task" />
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        extensions: {
+          myExtension(bp) {
+            if (bp.type !== 'bpmn:Process') return;
+            bp.behaviour.candidateStarterGroups = {foo: 'bar'};
+            return {
+              activate() {},
+              deactivate() {},
+            };
+          },
+        },
+      });
+    });
+
+    When('started', () => {
+      started = flow.waitFor('process.start');
+      return flow.run();
+    });
+
+    Then('process have NO groups since type is not accepted', async () => {
+      const bp = await started;
+      expect(bp.environment.variables).to.not.have.property('candidateStarterGroups');
+      bp.stop();
+    });
+  });
 });
