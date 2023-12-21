@@ -1,6 +1,16 @@
 Changelog
 =========
 
+# 7.0.0
+
+Attempting to mitigate Boundary Event formatting interrupting normal execution flow. Asynchronous formatting prevents catching events from attached task. Should probably be done in bpmn-elements but the developer is busy.
+
+## Breaking
+
+- No interrupting formatting on boundary events before end
+- Boundary event start execution listener will be executed but _without_ formatting capabilities and detached from execution. Occasional error will just be logged
+- Boundary event end execution listener is still executed _with_ formatting capabilities
+
 # 6.0.0
 
 - Require peer dependency `bpmn-elements >= 8`

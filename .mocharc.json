@@ -1,0 +1,9 @@
+{
+  "exit": true,
+  "recursive": true,
+  "reporter": "spec",
+  "timeout": 3000,
+  "ui": "mocha-cakes-2",
+  "require": ["./test/helpers/setup.js"],
+  "node-options": ["trace-warnings"]
+}

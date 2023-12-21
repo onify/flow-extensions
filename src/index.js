@@ -1,11 +1,18 @@
 import { OnifyProcessExtensions } from './OnifyProcessExtensions.js';
 import { OnifyElementExtensions } from './OnifyElementExtensions.js';
+import { OnifyBoundaryEventExtensions } from './OnifyBoundaryEventExtensions.js';
 export { OnifySequenceFlow } from './OnifySequenceFlow.js';
 export { OnifyTimerEventDefinition } from './OnifyTimerEventDefinition.js';
 
 export function extensions(element, context) {
-  if (element.type === 'bpmn:Process') return new OnifyProcessExtensions(element, context);
-  return new OnifyElementExtensions(element, context);
+  switch (element.type) {
+    case 'bpmn:Process':
+      return new OnifyProcessExtensions(element, context);
+    case 'bpmn:BoundaryEvent':
+      return new OnifyBoundaryEventExtensions(element, context);
+    default:
+      return new OnifyElementExtensions(element, context);
+  }
 }
 
 export function extendFn(behaviour, context) {

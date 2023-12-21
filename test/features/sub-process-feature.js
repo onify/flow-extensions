@@ -61,4 +61,110 @@ Feature('Sub process', () => {
       ]);
     });
   });
+
+  Scenario('Multi-instance sub process', () => {
+    let source;
+    /** @type {import('bpmn-elements').Definition} */
+    let flow;
+    Given('a flow with multi instance sub process including child sub process both looped over a collection', () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def-multi" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="testing-sub-process" isExecutable="true">
+          <startEvent id="start" />
+          <sequenceFlow id="to-task" sourceRef="start" targetRef="task" />
+          <task id="task" />
+          <sequenceFlow id="to-sub" sourceRef="task" targetRef="sub" />
+          <subProcess id="sub">
+            <multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.input.collection}" camunda:elementVariable="process" />
+            <task id="subtask" />
+            <sequenceFlow id="to-subsub" sourceRef="subtask" targetRef="subsub" />
+            <subProcess id="subsub">
+              <multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.input.collection}" camunda:elementVariable="process" />
+              <task id="subsubtask" />
+            </subProcess>
+          </subProcess>
+          <sequenceFlow id="to-wait" sourceRef="sub" targetRef="wait" />
+          <userTask id="wait" camunda:resultVariable="continue">
+            <extensionElements>
+              <camunda:inputOutput>
+                <camunda:outputParameter name="continue">
+                  <camunda:script scriptFormat="js">
+                    next(null, content.output.message === 'Yes');
+                  </camunda:script>
+                </camunda:outputParameter>
+              </camunda:inputOutput>
+            </extensionElements>
+          </userTask>
+          <sequenceFlow id="to-gw" sourceRef="wait" targetRef="gw" />
+          <exclusiveGateway id="gw" default="to-end" />
+          <sequenceFlow id="backto-task" name="Yes" sourceRef="gw" targetRef="task">
+            <conditionExpression xsi:type="tFormalExpression" language="js">next(null, environment.output.continue);</conditionExpression>
+          </sequenceFlow>
+          <sequenceFlow id="to-end" sourceRef="gw" targetRef="end" />
+          <endEvent id="end" />
+        </process>
+      </definitions>`;
+    });
+
+    let wait;
+    let subtaskCount = 0, subsubtaskCount = 0;
+    const formatEnd = [];
+    When('ran with a collection of 10 items', async () => {
+      flow = await testHelpers.getOnifyFlow(source, {
+        variables: {
+          input: {
+            collection: new Array(10).fill(0).map((_, idx) => idx),
+          },
+        },
+        extensions: { forwardFormatting },
+      });
+
+      flow.broker.subscribeTmp('event', 'activity.end', (_, msg) => {
+        if (msg.content.id === 'subtask') subtaskCount++;
+        if (msg.content.id === 'subsubtask') subsubtaskCount++;
+      }, { noAck: true });
+
+      flow.broker.subscribeTmp('event', 'format.run.enter.complete', (_, msg) => {
+        formatEnd.push(msg.content.id);
+      }, { noAck: true });
+
+      wait = flow.waitFor('wait');
+      flow.run();
+    });
+
+    Then('it waits for succeeding user task', () => {
+      return wait;
+    });
+
+    And('sub process ran 10 times', () => {
+      expect(subtaskCount).to.equal(10);
+    });
+
+    And('sub-sub process ran 100 times', () => {
+      expect(subsubtaskCount).to.equal(100);
+    });
+
+    And('sub process formatting was done once', () => {
+      const count = formatEnd.filter((id) => id === 'sub').length;
+      expect(count).to.equal(1);
+    });
+
+    And('sub-sub process formatting was done 10 times', () => {
+      const count = formatEnd.filter((id) => id === 'subsub').length;
+      expect(count).to.equal(10);
+    });
+  });
 });
+
+/**
+ * Format formatting to events
+ * @param {import('bpmn-elements').Activity} activity
+ */
+function forwardFormatting(activity) {
+  const broker = activity.broker;
+
+  broker.subscribeTmp('format', 'run.#', (routingKey, msg) => {
+    broker.publish('event', 'format.' + routingKey, {id: activity.id, ...msg.content});
+  }, { noAck: true });
+}

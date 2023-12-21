@@ -1,5 +1,5 @@
 import {Serializer, TypeResolver} from 'moddle-context-serializer';
-import {Engine} from 'bpmn-engine';
+import { Engine } from 'bpmn-engine';
 import {extensions, extendFn} from '../../src/index.js';
 import {FlowScripts} from './FlowScripts.js';
 import {promises as fs} from 'fs';
@@ -25,17 +25,32 @@ function moddleContext(source, options) {
   return bpmnModdle.fromXML(Buffer.isBuffer(source) ? source.toString() : source.trim());
 }
 
-async function getOnifyFlow(source, options) {
+/**
+ * Get Definition as Onify flow with extensions
+ * @param {string | Buffer} source BPMN source
+ * @param {import('bpmn-elements').EnvironmentOptions} options Definition options
+ * @returns {Promise<import('bpmn-elements').Definition>}
+ */
+async function getOnifyFlow(source, options = {}) {
   const moddle = await moddleContext(source, await getModdleExtensions());
   if (moddle.warnings?.length) {
     const logger = Logger('bpmn-moddle');
     for (const w of moddle.warnings) logger.warn(w);
   }
 
-  const serialized = Serializer(moddle, TypeResolver({...Elements, ...options?.types}), extendFn);
-  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, options));
+  const { types, ...environmentOptions } = options || {};
+
+  const serialized = Serializer(moddle, TypeResolver({ ...Elements, ...types }), extendFn);
+  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, environmentOptions));
 }
 
+/**
+ * Get Engine as Onify flow with extensions
+ * @param {string} name engine name
+ * @param {string | Buffer} source BPMN source
+ * @param {import('bpmn-engine').BpmnEngineOptions} options engine options
+ * @returns {Promise<import('bpmn-engine').BpmnEngine>}
+ */
 async function getEngine(name, source, options) {
   return new Engine({
     name,

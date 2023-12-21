@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0d6ds8m" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.18.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="Process_0gpnvyy" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="start">
+      <bpmn:outgoing>to-script</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="to-script" sourceRef="start" targetRef="script" />
+    <bpmn:endEvent id="end">
+      <bpmn:incoming>to-end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to-end" sourceRef="script" targetRef="end" />
+    <bpmn:scriptTask id="script" scriptFormat="js">
+      <bpmn:extensionElements />
+      <bpmn:incoming>to-script</bpmn:incoming>
+      <bpmn:outgoing>to-end</bpmn:outgoing>
+      <bpmn:script>next();</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="end-error">
+      <bpmn:incoming>to-end-error</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="to-end-error" sourceRef="errorlistener" targetRef="end-error" />
+    <bpmn:boundaryEvent id="errorlistener" attachedToRef="script">
+      <bpmn:extensionElements>
+        <camunda:executionListener event="start">
+          <camunda:script scriptFormat="js">console.log(content.output.inner.data.id);
+next();</camunda:script>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>to-end-error</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_17qym94" />
+    </bpmn:boundaryEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0gpnvyy">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ghehw4_di" bpmnElement="script">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ghkson_di" bpmnElement="end-error">
+        <dc:Bounds x="392" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wytvsu_di" bpmnElement="end">
+        <dc:Bounds x="442" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1c12605_di" bpmnElement="errorlistener">
+        <dc:Bounds x="302" y="139" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_06hvehr_di" bpmnElement="to-script">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gm78yq_di" bpmnElement="to-end">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="442" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0djzrqx_di" bpmnElement="to-end-error">
+        <di:waypoint x="320" y="175" />
+        <di:waypoint x="320" y="240" />
+        <di:waypoint x="392" y="240" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
