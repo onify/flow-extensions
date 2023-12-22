@@ -7,7 +7,7 @@ Attempting to mitigate Boundary Event formatting interrupting normal execution f
 
 ## Breaking
 
-- No interrupting formatting on boundary events before end
+- No async formatting on boundary events before end
 - Boundary event start execution listener will be executed but _without_ formatting capabilities and detached from execution. Occasional error will just be logged
 - Boundary event end execution listener is still executed _with_ formatting capabilities
 
