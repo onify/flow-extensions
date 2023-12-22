@@ -4,61 +4,37 @@ export class OnifyElementExtensions {
   constructor(activity, context) {
     this.activity = activity;
     this.context = context;
-    const {Service} = this.extensions = getExtensions(activity, context);
+    this.formatQ = activity.broker.getQueue('format-run-q');
+    this._asyncFormatOnEnter = this._asyncFormatOnEnter.bind(this);
+
+    const { Service } = this.extensions = getExtensions(activity, context);
     if (Service) {
       activity.behaviour.Service = Service;
     }
   }
   activate(message) {
     const activity = this.activity;
-    const broker = activity.broker;
-    const formatQ = activity.broker.getQueue('format-run-q');
     const executionListeners = this.extensions.listeners;
 
     if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
-      activity.on('start', (elementApi) => {
-        this._formatOnEnter(broker, formatQ, elementApi);
-      }, {consumerTag: '_onify-extension-on-enter'});
+      activity.on('start', this._asyncFormatOnEnter, {consumerTag: '_onify-extension-on-enter'});
     } else {
-      activity.on('enter', (elementApi) => {
-        this._formatOnEnter(broker, formatQ, elementApi);
-      }, {consumerTag: '_onify-extension-on-enter'});
+      activity.on('enter', this._asyncFormatOnEnter, {consumerTag: '_onify-extension-on-enter'});
     }
 
     activity.on('activity.execution.completed', (elementApi) => {
-      if (activity.isSubProcess && activity.id !== elementApi.id) return;
-
-      return this._onExecutionCompleted(elementApi, formatQ);
+      return this._onExecutionCompleted(elementApi);
     }, {consumerTag: '_onify-extension-on-executed'});
 
     if (executionListeners?.onStart) {
-      activity.on('start', async (elementApi) => {
-        if (activity.isSubProcess && activity.id !== elementApi.id) return;
-
-        formatQ.queueMessage({routingKey: 'run.listener.start'}, {endRoutingKey: 'run.listener.start.complete'}, {persistent: false});
-
-        try {
-          var format = await executionListeners.execute('start', elementApi);
-        } catch (err) {
-          return broker.publish('format', 'run.listener.start.error', {error: err}, {persistent: false});
-        }
-
-        broker.publish('format', 'run.listener.start.complete', {...format}, {persistent: false});
+      activity.on('start', (elementApi) => {
+        this._executeExecutionListener('start', elementApi);
       }, {consumerTag: '_onify-extension-on-listenerstart'});
     }
+
     if (executionListeners?.onEnd) {
-      activity.on('end', async (elementApi) => {
-        if (activity.isSubProcess && activity.id !== elementApi.id) return;
-
-        formatQ.queueMessage({routingKey: 'run.listener.end'}, {endRoutingKey: 'run.listener.end.complete'}, {persistent: false});
-
-        try {
-          var format = await executionListeners.execute('end', elementApi);
-        } catch (err) {
-          return broker.publish('format', 'run.listener.end.error', {error: err}, {persistent: false});
-        }
-
-        broker.publish('format', 'run.listener.end.complete', {...format}, {persistent: false});
+      activity.on('end', (elementApi) => {
+        this._executeExecutionListener('end', elementApi);
       }, {consumerTag: '_onify-extension-on-listenerend'});
     }
   }
@@ -69,21 +45,19 @@ export class OnifyElementExtensions {
     broker.cancel('_onify-extension-on-listenerstart');
     broker.cancel('_onify-extension-on-listenerend');
   }
-  async _formatOnEnter(broker, formatQ, elementApi) {
-    if (this.activity.isSubProcess && this.activity.id !== elementApi.id) return;
-
-    formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
+  async _asyncFormatOnEnter(elementApi) {
+    this.formatQ.queueMessage({routingKey: 'run.enter.format'}, {endRoutingKey: 'run.enter.complete'}, {persistent: false});
 
     try {
-      var format = await this._onEnter(elementApi);
+      var format = await this._onEnterAsync(elementApi);
     } catch (err) {
-      return broker.publish('format', 'run.enter.error', {error: err}, {persistent: false});
+      return elementApi.broker.publish('format', 'run.enter.error', {error: err}, {persistent: false});
     }
 
-    broker.publish('format', 'run.enter.complete', format, {persistent: false});
+    elementApi.broker.publish('format', 'run.enter.complete', format, {persistent: false});
   }
-  async _onExecutionCompleted(elementApi, formatQ) {
-    formatQ.queueMessage({routingKey: 'run.end.format'}, { endRoutingKey: 'run.end.complete' }, { persistent: false });
+  async _onExecutionCompleted(elementApi) {
+    this.formatQ.queueMessage({routingKey: 'run.end.format'}, { endRoutingKey: 'run.end.complete' }, { persistent: false });
 
     try {
       var format = await this._onExecuted(elementApi);
@@ -93,7 +67,7 @@ export class OnifyElementExtensions {
 
     elementApi.broker.publish('format', 'run.end.complete', { ...format }, {persistent: false});
   }
-  async _onEnter(elementApi) {
+  async _onEnterAsync(elementApi) {
     const {format, properties, io, form} = this.extensions;
 
     const result = {};
@@ -149,5 +123,19 @@ export class OnifyElementExtensions {
     }
 
     return result;
+  }
+  async _executeExecutionListener(eventName, elementApi) {
+    const routingKey = 'run.listener.' + eventName;
+    const endRoutingKey = routingKey + '.complete';
+
+    this.formatQ.queueMessage({ routingKey }, { endRoutingKey }, { persistent: false });
+
+    try {
+      var format = await this.extensions.listeners.execute(eventName, elementApi);
+    } catch (err) {
+      return elementApi.broker.publish('format', routingKey + '.error', { error: err }, { persistent: false });
+    }
+
+    elementApi.broker.publish('format', endRoutingKey, { ...format }, { persistent: false });
   }
 }

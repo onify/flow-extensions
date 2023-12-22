@@ -3,21 +3,17 @@ import { OnifyElementExtensions } from './OnifyElementExtensions.js';
 export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
   constructor(activity, context) {
     super(activity, context);
+    this._syncFormatOnEnter = this._syncFormatOnEnter.bind(this);
   }
   activate(message) {
     const activity = this.activity;
-    const broker = activity.broker;
     const formatQ = activity.broker.getQueue('format-run-q');
     const executionListeners = this.extensions.listeners;
 
     if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
-      activity.on('start', (elementApi) => {
-        this._syncFormatOnEnter(broker, elementApi);
-      }, { consumerTag: '_onify-extension-on-enter' });
+      activity.on('start', this._syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
     } else {
-      activity.on('enter', (elementApi) => {
-        this._syncFormatOnEnter(broker, elementApi);
-      }, { consumerTag: '_onify-extension-on-enter' });
+      activity.on('enter', this._syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
     }
 
     activity.on('activity.execution.completed', (elementApi) => {
@@ -34,29 +30,21 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
       }, { consumerTag: '_onify-extension-on-listenerstart' });
     }
     if (executionListeners?.onEnd) {
-      activity.on('end', async (elementApi) => {
-        formatQ.queueMessage({routingKey: 'run.listener.end'}, { endRoutingKey: 'run.listener.end.complete' }, { persistent: false });
-
-        try {
-          var format = await executionListeners.execute('end', elementApi);
-        } catch (err) {
-          return broker.publish('format', 'run.listener.end.error', { error: err }, {persistent: false});
-        }
-
-        broker.publish('format', 'run.listener.end.complete', { ...format }, {persistent: false});
+      activity.on('end', (elementApi) => {
+        this._executeExecutionListener('end', elementApi, formatQ);
       }, { consumerTag: '_onify-extension-on-listenerend' });
     }
   }
-  _syncFormatOnEnter(broker, elementApi) {
+  _syncFormatOnEnter(elementApi) {
     try {
-      var format = this._onSyncEnter(elementApi);
+      var format = this._onEnterSync(elementApi);
     } catch (err) {
-      return broker.publish('format', 'run.enter.error', { error: err }, { persistent: false });
+      return elementApi.broker.publish('format', 'run.enter.error', { error: err }, { persistent: false });
     }
 
-    broker.publish('format', 'run.enter.complete', format, { persistent: false });
+    elementApi.broker.publish('format', 'run.enter.complete', format, { persistent: false });
   }
-  _onSyncEnter(elementApi) {
+  _onEnterSync(elementApi) {
     const {format, properties, io} = this.extensions;
 
     const result = {};

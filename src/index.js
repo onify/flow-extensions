@@ -1,6 +1,8 @@
 import { OnifyProcessExtensions } from './OnifyProcessExtensions.js';
 import { OnifyElementExtensions } from './OnifyElementExtensions.js';
 import { OnifyBoundaryEventExtensions } from './OnifyBoundaryEventExtensions.js';
+import { OnifySubProcessExtensions } from './OnifySubProcessExtensions.js';
+
 export { OnifySequenceFlow } from './OnifySequenceFlow.js';
 export { OnifyTimerEventDefinition } from './OnifyTimerEventDefinition.js';
 
@@ -8,6 +10,9 @@ export function extensions(element, context) {
   switch (element.type) {
     case 'bpmn:Process':
       return new OnifyProcessExtensions(element, context);
+    case 'bpmn:SubProcess':
+    case 'bpmn:Transaction':
+      return new OnifySubProcessExtensions(element, context);
     case 'bpmn:BoundaryEvent':
       return new OnifyBoundaryEventExtensions(element, context);
     default:
