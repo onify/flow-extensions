@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 7.1.0
+
+- add process attribute `historyTimeToLive` to process environment variables when running
+- add process attribute `historyTimeToLive` as timer to definition context via `extendFn`, formatted as ISO8601 duration
+
 # 7.0.0
 
 Attempting to mitigate Boundary Event formatting interrupting normal execution flow. Asynchronous formatting prevents catching events from attached task. Should probably be done in bpmn-elements but the developer is busy.

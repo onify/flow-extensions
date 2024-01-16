@@ -61,6 +61,10 @@ export class FormatActivity {
 export class FormatProcess {
   constructor(bp) {
     this.process = bp;
+    this._historyTTL = undefined;
+    if (bp.behaviour.historyTimeToLive) {
+      this._historyTTL = bp.context.definitionContext.getTimersByElementId(bp.id).find((t) => t.timer.type === 'historyTimeToLive');
+    }
   }
   resolve(elementApi) {
     let user, groups, description;
@@ -79,6 +83,7 @@ export class FormatProcess {
       ...(user?.length && {candidateStarterUsers: user}),
       ...(groups?.length && {candidateStarterGroups: groups}),
       ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
+      ...(this._historyTTL && {historyTimeToLive: this._historyTTL.timer.value}),
     };
   }
 }

@@ -21,9 +21,26 @@ export function extensions(element, context) {
 }
 
 export function extendFn(behaviour, context) {
-  if (behaviour.$type === 'bpmn:StartEvent' && behaviour.eventDefinitions) {
-    const timer = behaviour.eventDefinitions.find(({type, behaviour: edBehaviour}) => edBehaviour && type === 'bpmn:TimerEventDefinition');
-    if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});
+  switch (behaviour.$type) {
+    case 'bpmn:StartEvent': {
+      if (!behaviour.eventDefinitions) break;
+
+      const timer = behaviour.eventDefinitions.find(({type, behaviour: edBehaviour}) => edBehaviour && type === 'bpmn:TimerEventDefinition');
+      if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});
+
+      break;
+    }
+    case 'bpmn:Process': {
+      if (!behaviour.isExecutable) break;
+
+      const { historyTimeToLive, isExecutable } = behaviour;
+
+      if (historyTimeToLive && isExecutable) {
+        context.addTimer(behaviour.id + ':historyTimeToLive', getHistoryTimeToLiveTimer(behaviour));
+      }
+
+      break;
+    }
   }
 
   if (!Array.isArray(behaviour.extensionElements?.values)) return;
@@ -77,4 +94,20 @@ function registerListenerScript(parentId, context, type, listener, pos) {
     ...(script.value && {body: script.value}),
     ...(script.resource && {resource: script.resource}),
   });
+}
+
+function getHistoryTimeToLiveTimer(behaviour) {
+  const { id, $type: type, historyTimeToLive } = behaviour;
+
+  let value = historyTimeToLive;
+  if (/^\d+$/.test(historyTimeToLive)) {
+    value = `P${historyTimeToLive}D`;
+  }
+  return {
+    id: `${type}/${id}:historyTimeToLive`,
+    type: 'historyTimeToLive',
+    timerType: 'timeDuration',
+    value,
+    parent: { id, type },
+  };
 }
