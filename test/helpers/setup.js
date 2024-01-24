@@ -1,6 +1,4 @@
-import { expect } from 'chai';
+import 'chai/register-expect.js';
 
 process.env.TZ = 'Europe/Stockholm';
 process.env.NODE_ENV = 'test';
-
-global.expect = expect;
