@@ -32,7 +32,7 @@ Feature('Flow connector', () => {
       await timer;
 
       [element] = flow.getPostponed();
-      flow.cancelActivity({id: element.id});
+      flow.cancelActivity({ id: element.id });
     });
 
     Then('API request is pending', () => {
@@ -48,7 +48,7 @@ Feature('Flow connector', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'post',
         query: { tag: 'agent', async: true },
-        payload: { vars: [ '-arrSearchConfig user', '-useTemplate' ] },
+        payload: { vars: ['-arrSearchConfig user', '-useTemplate'] },
         url: '/admin/agents/task/prepareOnifyIndexAD',
       });
     });
@@ -68,11 +68,13 @@ Feature('Flow connector', () => {
       flow.signal({
         result: {
           response: JSON.stringify({
-            searchConfig: [{
-              user: {
-                filePath: '/user.json',
+            searchConfig: [
+              {
+                user: {
+                  filePath: '/user.json',
+                },
               },
-            }],
+            ],
           }),
         },
       });
@@ -92,7 +94,7 @@ Feature('Flow connector', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'post',
         query: { tag: 'agent', async: true },
-        payload: { vars: [ '/user.json', '0', '1000' ] },
+        payload: { vars: ['/user.json', '0', '1000'] },
         url: '/admin/agents/task/readDataFromJsonFile',
       });
     });
@@ -112,9 +114,11 @@ Feature('Flow connector', () => {
       flow.signal({
         result: {
           response: JSON.stringify({
-            records: [{
-              key: 'user-1',
-            }],
+            records: [
+              {
+                key: 'user-1',
+              },
+            ],
           }),
         },
       });
@@ -220,7 +224,7 @@ Feature('Flow connector', () => {
       flow = await testHelpers.getOnifyFlow(source, {
         services: {
           onifyApiRequest(...args) {
-            args.pop()(null, {statuscode: 200});
+            args.pop()(null, { statuscode: 200 });
           },
         },
       });
@@ -527,11 +531,13 @@ Feature('Flow connector', () => {
       const message = apiCall[1];
 
       expect(connectorArgument).to.have.property('method', 'post');
-      expect(connectorArgument).to.have.property('query').that.deep.equal({
-        async: true,
-        tag: ['tag-1', 'tag-2'],
-        role: ['role-1', 'role-2'],
-      });
+      expect(connectorArgument)
+        .to.have.property('query')
+        .that.deep.equal({
+          async: true,
+          tag: ['tag-1', 'tag-2'],
+          role: ['role-1', 'role-2'],
+        });
       expect(message.content).to.have.property('properties').that.deep.equal({
         alert_stateid: 'async-result',
       });

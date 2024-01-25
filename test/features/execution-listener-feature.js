@@ -1,5 +1,5 @@
-import {Serializer, TypeResolver} from 'moddle-context-serializer';
-import {extendFn} from '../../src/index.js';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
+import { extendFn } from '../../src/index.js';
 import * as Elements from 'bpmn-elements';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
@@ -157,12 +157,7 @@ Feature('execution listeners', () => {
 
     Then('run completes triggering sub process execution listeners once', async () => {
       await end;
-      expect(events).to.deep.equal([
-        'substart',
-        'taskstart',
-        'taskend',
-        'subend',
-      ]);
+      expect(events).to.deep.equal(['substart', 'taskstart', 'taskend', 'subend']);
     });
 
     When('multi-instance sub process runs with execution listeners', async () => {
@@ -225,14 +220,7 @@ Feature('execution listeners', () => {
 
     Then('run completes triggering sub process execution listeners once', async () => {
       await end;
-      expect(events).to.deep.equal([
-        'substart',
-        'taskstart',
-        'taskend',
-        'taskstart',
-        'taskend',
-        'subend',
-      ]);
+      expect(events).to.deep.equal(['substart', 'taskstart', 'taskend', 'taskstart', 'taskend', 'subend']);
     });
   });
 

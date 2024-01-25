@@ -2,16 +2,16 @@ name: Built latest
 
 on:
   push:
-    branches: [ default ]
+    branches: [default]
   pull_request:
-    branches: [ default ]
+    branches: [default]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 14, 16, 18, 20, latest ]
+        node-version: [14, 16, 18, 20, latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

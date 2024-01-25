@@ -1,5 +1,5 @@
-import {SequenceFlow} from 'bpmn-elements';
-import {getExtensions} from './getExtensions.js';
+import { SequenceFlow } from 'bpmn-elements';
+import { getExtensions } from './getExtensions.js';
 
 export class OnifySequenceFlow extends SequenceFlow {
   constructor(flowDef, context) {
@@ -10,9 +10,14 @@ export class OnifySequenceFlow extends SequenceFlow {
   _activate() {
     if (!this.extensions.listeners?.onTake) return;
 
-    this.broker.subscribeTmp('event', 'flow.take', (_, msg) => {
-      this._executeListeners(msg);
-    }, {noAck: true, consumerTag: '_onify-execution-listener'});
+    this.broker.subscribeTmp(
+      'event',
+      'flow.take',
+      (_, msg) => {
+        this._executeListeners(msg);
+      },
+      { noAck: true, consumerTag: '_onify-execution-listener' },
+    );
   }
   async _executeListeners(message) {
     try {

@@ -1,4 +1,4 @@
-import {NotImplemented} from './Errors.js';
+import { NotImplemented } from './Errors.js';
 
 export default function ServiceExpression(activity) {
   if (!(this instanceof ServiceExpression)) return new ServiceExpression(activity);

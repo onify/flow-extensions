@@ -44,12 +44,9 @@ Feature('Flow element properties', () => {
 
     Then('run completes', async () => {
       const ended = await end;
-      expect(ended.environment.output).to.have.property('result').that.deep.equal([
-        { iteration: 1 },
-        { iteration: 2 },
-        { iteration: 3 },
-        { iteration: 4 },
-      ]);
+      expect(ended.environment.output)
+        .to.have.property('result')
+        .that.deep.equal([{ iteration: 1 }, { iteration: 2 }, { iteration: 3 }, { iteration: 4 }]);
     });
   });
 });

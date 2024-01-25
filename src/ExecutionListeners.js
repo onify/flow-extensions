@@ -10,7 +10,7 @@ class Listener {
   _getScope(message, extend) {
     const environment = this.environment;
 
-    const {fields, content, properties} = message;
+    const { fields, content, properties } = message;
     const scope = {
       ...extend,
       type: this.type,
@@ -33,7 +33,7 @@ class Listener {
     const fields = this.extension.fields;
     if (!fields?.length) return;
     const result = {};
-    for (const {name, expression, string} of fields) {
+    for (const { name, expression, string } of fields) {
       result['' + name] = expression ? environment.resolveExpression(expression, scope) : string;
     }
     return result;
@@ -43,15 +43,15 @@ class Listener {
 class ScriptListener extends Listener {
   constructor(activity, context, extension, pos) {
     super(activity, context, extension);
-    const id = this.id = `${activity.id}/${extension.script.$type}/${this.event}/${pos}`;
+    const id = (this.id = `${activity.id}/${extension.script.$type}/${this.event}/${pos}`);
     this._register(context, id, extension.script);
   }
   execute(api) {
     const environment = this.environment;
-    const scope = this._getScope(api, {id: this.id, resolveExpression});
+    const scope = this._getScope(api, { id: this.id, resolveExpression });
     const listenerFields = this._getFields(environment, scope);
     if (listenerFields) scope.listener.fields = listenerFields;
-    const script = this.environment.scripts.getScript(this.extension.scriptFormat, {id: this.id});
+    const script = this.environment.scripts.getScript(this.extension.scriptFormat, { id: this.id });
 
     return new Promise((resolve, reject) => {
       return script.execute(scope, (err, result) => {
@@ -65,11 +65,7 @@ class ScriptListener extends Listener {
     }
   }
   _register(context, id, script) {
-    const {
-      scriptFormat,
-      value,
-      resource,
-    } = script;
+    const { scriptFormat, value, resource } = script;
 
     context.environment.scripts.register({
       id,
@@ -90,7 +86,7 @@ class ScriptListener extends Listener {
 class ExpressionListener extends Listener {
   execute(message) {
     const scope = this._getScope(message);
-    return {expression: this.environment.resolveExpression(this.extension.expression, scope)};
+    return { expression: this.environment.resolveExpression(this.extension.expression, scope) };
   }
 }
 
@@ -113,7 +109,7 @@ export default class ExecutionListeners {
     return this.listeners.some((l) => l.event === 'take');
   }
   add(extension, pos) {
-    const {script, expression} = extension;
+    const { script, expression } = extension;
     if (!script && !expression) return;
 
     const list = this.listeners;

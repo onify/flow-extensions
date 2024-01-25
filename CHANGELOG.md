@@ -1,10 +1,10 @@
-Changelog
-=========
+# Changelog
 
 # 7.1.0
 
 - add process attribute `historyTimeToLive` to process environment variables when running
 - add process attribute `historyTimeToLive` as timer to definition context via `extendFn`, formatted as ISO8601 duration
+- use prettier since eslint will deprecate formatting rules in the next major release
 
 # 7.0.0
 

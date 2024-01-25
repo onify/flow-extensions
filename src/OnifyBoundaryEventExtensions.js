@@ -16,23 +16,35 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
       activity.on('enter', this._syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
     }
 
-    activity.on('activity.execution.completed', (elementApi) => {
-      return this._onExecutionCompleted(elementApi, formatQ);
-    }, { consumerTag: '_onify-extension-on-executed' });
+    activity.on(
+      'activity.execution.completed',
+      (elementApi) => {
+        return this._onExecutionCompleted(elementApi, formatQ);
+      },
+      { consumerTag: '_onify-extension-on-executed' },
+    );
 
     if (executionListeners?.onStart) {
-      activity.on('start', async (elementApi) => {
-        try {
-          await executionListeners.execute('start', elementApi);
-        } catch (err) {
-          return activity.logger.error(`<${activity.id}> execution listener error`, err);
-        }
-      }, { consumerTag: '_onify-extension-on-listenerstart' });
+      activity.on(
+        'start',
+        async (elementApi) => {
+          try {
+            await executionListeners.execute('start', elementApi);
+          } catch (err) {
+            return activity.logger.error(`<${activity.id}> execution listener error`, err);
+          }
+        },
+        { consumerTag: '_onify-extension-on-listenerstart' },
+      );
     }
     if (executionListeners?.onEnd) {
-      activity.on('end', (elementApi) => {
-        this._executeExecutionListener('end', elementApi, formatQ);
-      }, { consumerTag: '_onify-extension-on-listenerend' });
+      activity.on(
+        'end',
+        (elementApi) => {
+          this._executeExecutionListener('end', elementApi, formatQ);
+        },
+        { consumerTag: '_onify-extension-on-listenerend' },
+      );
     }
   }
   _syncFormatOnEnter(elementApi) {
@@ -45,7 +57,7 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
     elementApi.broker.publish('format', 'run.enter.complete', format, { persistent: false });
   }
   _onEnterSync(elementApi) {
-    const {format, properties, io} = this.extensions;
+    const { format, properties, io } = this.extensions;
 
     const result = {};
     Object.assign(result, format.resolve(elementApi));

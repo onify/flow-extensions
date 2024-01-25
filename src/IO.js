@@ -1,7 +1,7 @@
 export class IOBase {
   constructor(parm) {
     this.name = parm.name;
-    this.type = parm.definition && parm.definition.$type || 'string';
+    this.type = (parm.definition && parm.definition.$type) || 'string';
     this.behaviour = parm;
   }
   getValue(activity, executionMessage) {
@@ -18,12 +18,12 @@ class IOMap extends IOBase {
   getValue(activity, executionMessage) {
     const name = this.name;
     const entries = this.behaviour.definition.entries;
-    if (!Array.isArray(entries)) return {[name]: {}};
+    if (!Array.isArray(entries)) return { [name]: {} };
 
     const environment = activity.environment;
 
     const result = {};
-    for (const {key, value} of entries) {
+    for (const { key, value } of entries) {
       if (!key) continue;
 
       const val = environment.resolveExpression(value, executionMessage);
@@ -33,7 +33,7 @@ class IOMap extends IOBase {
         if (Array.isArray(current)) {
           current.push(val);
         } else {
-          const items = result[key] = [];
+          const items = (result[key] = []);
           if (current !== undefined) items.push(current);
           items.push(val);
         }
@@ -42,7 +42,7 @@ class IOMap extends IOBase {
       }
     }
 
-    return {[name]: result};
+    return { [name]: result };
   }
 }
 
@@ -55,7 +55,7 @@ export class IOList extends IOBase {
     const items = this.behaviour.definition.items;
 
     const result = [];
-    if (!Array.isArray(items)) return {[name]: result};
+    if (!Array.isArray(items)) return { [name]: result };
 
     const environment = activity.environment;
     for (const item of items) {
@@ -80,7 +80,7 @@ export class IOScript extends IOBase {
     const name = this.name;
     const environment = activity.environment;
 
-    const {fields, content, properties, ...rest} = executionMessage;
+    const { fields, content, properties, ...rest } = executionMessage;
     const scope = {
       id: this.id,
       type: this.type,
@@ -94,12 +94,12 @@ export class IOScript extends IOBase {
       ...rest,
     };
 
-    const script = environment.scripts.getScript(definition.scriptFormat, {id: this.id});
+    const script = environment.scripts.getScript(definition.scriptFormat, { id: this.id });
 
     return new Promise((resolve, reject) => {
       return script.execute(scope, (err, result) => {
         if (err) return reject(err);
-        resolve({[name]: result});
+        resolve({ [name]: result });
       });
     });
 
@@ -113,7 +113,7 @@ export class InputOutput {
   constructor(parentId, behaviour, context) {
     this.parentId = parentId;
     this.context = context;
-    const {inputParameters, outputParameters} = behaviour;
+    const { inputParameters, outputParameters } = behaviour;
     this.input = this._map(parentId, inputParameters, 'input', context);
     this.output = this._map(parentId, outputParameters, 'output', context);
   }
@@ -145,7 +145,7 @@ export class InputOutput {
         }
         case 'camunda:Script': {
           const id = `${parentId}/${ioType}/${type}/${parm.name}`;
-          const {scriptFormat, value, resource} = definition;
+          const { scriptFormat, value, resource } = definition;
 
           if (!value && !resource) break;
 
@@ -154,8 +154,8 @@ export class InputOutput {
             type: parm.$type,
             behaviour: {
               scriptFormat,
-              ...(value && {script: value}),
-              ...(resource && {resource}),
+              ...(value && { script: value }),
+              ...(resource && { resource }),
             },
           });
 

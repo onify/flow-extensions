@@ -54,11 +54,7 @@ Feature('Sub process', () => {
 
     Then('sub process formatting were hit once', async () => {
       await end;
-      expect(events).to.deep.equal([
-        'subin',
-        'taskout',
-        'subout',
-      ]);
+      expect(events).to.deep.equal(['subin', 'taskout', 'subout']);
     });
   });
 
@@ -115,11 +111,7 @@ Feature('Sub process', () => {
 
     Then('sub process formatting were hit once', async () => {
       await end;
-      expect(events).to.deep.equal([
-        'subin',
-        'taskout',
-        'subout',
-      ]);
+      expect(events).to.deep.equal(['subin', 'taskout', 'subout']);
     });
   });
 
@@ -169,7 +161,8 @@ Feature('Sub process', () => {
     });
 
     let wait;
-    let subtaskCount = 0, subsubtaskCount = 0;
+    let subtaskCount = 0,
+      subsubtaskCount = 0;
     const formatEnd = [];
     When('ran with a collection of 10 items', async () => {
       flow = await testHelpers.getOnifyFlow(source, {
@@ -181,14 +174,24 @@ Feature('Sub process', () => {
         extensions: { forwardFormatting },
       });
 
-      flow.broker.subscribeTmp('event', 'activity.end', (_, msg) => {
-        if (msg.content.id === 'subtask') subtaskCount++;
-        if (msg.content.id === 'subsubtask') subsubtaskCount++;
-      }, { noAck: true });
+      flow.broker.subscribeTmp(
+        'event',
+        'activity.end',
+        (_, msg) => {
+          if (msg.content.id === 'subtask') subtaskCount++;
+          if (msg.content.id === 'subsubtask') subsubtaskCount++;
+        },
+        { noAck: true },
+      );
 
-      flow.broker.subscribeTmp('event', 'format.run.enter.complete', (_, msg) => {
-        formatEnd.push(msg.content.id);
-      }, { noAck: true });
+      flow.broker.subscribeTmp(
+        'event',
+        'format.run.enter.complete',
+        (_, msg) => {
+          formatEnd.push(msg.content.id);
+        },
+        { noAck: true },
+      );
 
       wait = flow.waitFor('wait');
       flow.run();
@@ -284,7 +287,12 @@ Feature('Sub process', () => {
 function forwardFormatting(activity) {
   const broker = activity.broker;
 
-  broker.subscribeTmp('format', 'run.#', (routingKey, msg) => {
-    broker.publish('event', 'format.' + routingKey, {id: activity.id, ...msg.content});
-  }, { noAck: true });
+  broker.subscribeTmp(
+    'format',
+    'run.#',
+    (routingKey, msg) => {
+      broker.publish('event', 'format.' + routingKey, { id: activity.id, ...msg.content });
+    },
+    { noAck: true },
+  );
 }

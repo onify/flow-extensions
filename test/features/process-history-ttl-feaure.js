@@ -47,7 +47,7 @@ Feature('Process history ttl', () => {
 
     And('task is signaled', async () => {
       await wait;
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('process run completes', async () => {
@@ -62,7 +62,7 @@ Feature('Process history ttl', () => {
     });
 
     And('task is signaled', () => {
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('process run completes', async () => {

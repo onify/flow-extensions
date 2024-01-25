@@ -1,6 +1,6 @@
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
-import {OnifySequenceFlow} from '../../src/index.js';
+import { OnifySequenceFlow } from '../../src/index.js';
 
 class Logger {
   constructor() {
@@ -32,9 +32,14 @@ Feature('Sequence flow', () => {
     let end;
     const leaveMessages = [];
     When('ran with required input', async () => {
-      engine.broker.subscribeTmp('event', 'activity.leave', (_, message) => {
-        leaveMessages.push(message);
-      }, {noAck: true});
+      engine.broker.subscribeTmp(
+        'event',
+        'activity.leave',
+        (_, message) => {
+          leaveMessages.push(message);
+        },
+        { noAck: true },
+      );
 
       end = engine.waitFor('end');
       await engine.execute({
@@ -54,7 +59,7 @@ Feature('Sequence flow', () => {
       const message = leaveMessages.find((msg) => msg.content.id === 'end');
       expect(message.content.inbound).to.have.length(1);
       const [inbound] = message.content.inbound;
-      expect(inbound).to.have.property('properties').that.deep.equal({foo: 'bar'});
+      expect(inbound).to.have.property('properties').that.deep.equal({ foo: 'bar' });
     });
 
     And('sequence flow execution listener has executed', () => {
@@ -72,9 +77,14 @@ Feature('Sequence flow', () => {
         },
       });
 
-      engine.broker.subscribeTmp('event', 'activity.leave', (_, message) => {
-        leaveMessages.push(message);
-      }, {noAck: true});
+      engine.broker.subscribeTmp(
+        'event',
+        'activity.leave',
+        (_, message) => {
+          leaveMessages.push(message);
+        },
+        { noAck: true },
+      );
 
       end = engine.waitFor('end');
       await engine.execute();
@@ -133,12 +143,22 @@ Feature('Sequence flow', () => {
 
     let end;
     When('ran', async () => {
-      flow.broker.subscribeTmp('event', 'activity.enter', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
-      flow.broker.subscribeTmp('event', 'activity.discard', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
+      flow.broker.subscribeTmp(
+        'event',
+        'activity.enter',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
+      flow.broker.subscribeTmp(
+        'event',
+        'activity.discard',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
 
       end = flow.waitFor('end');
       await flow.run();
@@ -150,7 +170,7 @@ Feature('Sequence flow', () => {
 
     And('taken sequence flow was taken with properties', () => {
       const message = messages.find((msg) => msg.content.id === 'end' && msg.fields.routingKey === 'activity.enter');
-      expect(message.content.inbound[0].properties).to.deep.equal({from: 'start'});
+      expect(message.content.inbound[0].properties).to.deep.equal({ from: 'start' });
     });
 
     And('discarded flow was discarded without properties', () => {
@@ -160,12 +180,22 @@ Feature('Sequence flow', () => {
 
     When('ran again with options to take conditional flow', async () => {
       messages.splice(0);
-      flow.broker.subscribeTmp('event', 'activity.enter', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
-      flow.broker.subscribeTmp('event', 'activity.discard', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
+      flow.broker.subscribeTmp(
+        'event',
+        'activity.enter',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
+      flow.broker.subscribeTmp(
+        'event',
+        'activity.discard',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
 
       end = flow.waitFor('end');
       flow.environment.variables.take = { bar: 'baz' };
@@ -301,9 +331,14 @@ Feature('Sequence flow', () => {
     let end, listenersCalled;
     When('ran', async () => {
       listenersCalled = new Promise((resolve) => {
-        flow.broker.subscribeTmp('event', 'listener.taken', () => {
-          if (calls.length === 2) resolve(calls);
-        }, {noAck: true});
+        flow.broker.subscribeTmp(
+          'event',
+          'listener.taken',
+          () => {
+            if (calls.length === 2) resolve(calls);
+          },
+          { noAck: true },
+        );
       });
 
       end = flow.waitFor('end');
@@ -357,9 +392,14 @@ Feature('Sequence flow', () => {
     const messages = [];
     When('ran', async () => {
       messages.splice(0);
-      flow.broker.subscribeTmp('event', 'flow.#', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
+      flow.broker.subscribeTmp(
+        'event',
+        'flow.#',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
 
       end = flow.waitFor('end');
       await flow.run();
@@ -419,9 +459,14 @@ Feature('Sequence flow', () => {
 
       wait = flow.waitFor('wait');
 
-      flow.broker.subscribeTmp('event', 'flow.#', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
+      flow.broker.subscribeTmp(
+        'event',
+        'flow.#',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
 
       end = flow.waitFor('end');
       await flow.run();
@@ -441,7 +486,7 @@ Feature('Sequence flow', () => {
     });
 
     When('task is signalled', () => {
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('flow run completes', () => {
@@ -485,9 +530,14 @@ Feature('Sequence flow', () => {
 
       wait = flow.waitFor('wait');
 
-      flow.broker.subscribeTmp('event', 'flow.#', (_, msg) => {
-        messages.push(msg);
-      }, {noAck: true});
+      flow.broker.subscribeTmp(
+        'event',
+        'flow.#',
+        (_, msg) => {
+          messages.push(msg);
+        },
+        { noAck: true },
+      );
 
       end = flow.waitFor('end');
       await flow.run();
@@ -507,7 +557,7 @@ Feature('Sequence flow', () => {
     });
 
     When('task is signalled', () => {
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('flow run completes', () => {

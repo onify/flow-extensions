@@ -1,4 +1,4 @@
-import {Serializer, TypeResolver} from 'moddle-context-serializer';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
 import * as flowExtensions from '../src/index.js';
 import * as Elements from 'bpmn-elements';
 import factory from './helpers/factory.js';
@@ -21,7 +21,6 @@ describe('extensions', () => {
 
   describe('extendFn', () => {
     describe('scripts', () => {
-
       it('extendFn registers scripts', async () => {
         const source = factory.resource('activedirectory-index-users.bpmn');
         const moddleContext = await testHelpers.moddleContext(source, moddleExtensions);

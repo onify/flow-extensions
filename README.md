@@ -1,5 +1,4 @@
-Onify Flow Extensions
-=====================
+# Onify Flow Extensions
 
 [![Built latest](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml/badge.svg)](https://github.com/onify/flow-extensions/actions/workflows/build-latest.yaml)[![Coverage Status](https://coveralls.io/repos/github/onify/flow-extensions/badge.svg?branch=default)](https://coveralls.io/github/onify/flow-extensions?branch=default)
 
@@ -13,8 +12,8 @@ Onify Flow Extensions
 ## Bpmn engine example
 
 ```js
-const {Engine} = require('bpmn-engine');
-const {extensions} = require('@onify/flow-extensions');
+const { Engine } = require('bpmn-engine');
+const { extensions } = require('@onify/flow-extensions');
 const FlowScripts = require('@onify/flow-extensions/dist/src/FlowScripts');
 
 const source = `
@@ -41,8 +40,8 @@ const engine = new Engine({
   },
   services: {
     serviceFn(scope, callback) {
-      callback(null, {data: 1});
-    }
+      callback(null, { data: 1 });
+    },
   },
   extensions: {
     onify: extensions,
@@ -63,11 +62,11 @@ engine.execute((err, instance) => {
 ## Extract scripts with extend function
 
 ```js
-const {extendFn} = require('@onify/flow-extensions');
+const { extendFn } = require('@onify/flow-extensions');
 
 const BpmnModdle = require('bpmn-moddle');
 const Elements = require('bpmn-elements');
-const {default: Serializer, TypeResolver} = require('moddle-context-serializer');
+const { default: Serializer, TypeResolver } = require('moddle-context-serializer');
 
 const source = `
 <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -124,9 +123,9 @@ function getModdleContext(source, options) {
 ## Extend sequence flow with properties and take listeners
 
 ```js
-const {OnifySequenceFlow, extensions} = require('@onify/flow-extensions');
+const { OnifySequenceFlow, extensions } = require('@onify/flow-extensions');
 const FlowScripts = require('@onify/flow-extensions/dist/src/FlowScripts');
-const {Engine} = require('bpmn-engine');
+const { Engine } = require('bpmn-engine');
 const Elements = require('bpmn-elements');
 
 const source = `

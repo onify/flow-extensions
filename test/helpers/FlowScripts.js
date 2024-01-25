@@ -1,6 +1,6 @@
-import {join} from 'path';
-import {promises as fs} from 'fs';
-import {Script} from 'vm';
+import { join } from 'path';
+import { promises as fs } from 'fs';
+import { Script } from 'vm';
 
 const kSyntaxError = Symbol.for('syntax error');
 const kResources = Symbol.for('resources base');
@@ -49,11 +49,7 @@ class FlowSyntaxError extends Error {
   }
 }
 
-export {
-  FlowScripts,
-  JavaScript,
-  JavaScriptResource,
-};
+export { FlowScripts, JavaScript, JavaScriptResource };
 
 function FlowScripts(flowName, resourceBase, runContext, timeout = 60000) {
   this._name = flowName;
@@ -63,7 +59,7 @@ function FlowScripts(flowName, resourceBase, runContext, timeout = 60000) {
   this[kResources] = resourceBase;
 }
 
-FlowScripts.prototype.register = function register({id, type, behaviour}) {
+FlowScripts.prototype.register = function register({ id, type, behaviour }) {
   let language, scriptBody, resource;
 
   switch (type) {
@@ -90,13 +86,13 @@ FlowScripts.prototype.register = function register({id, type, behaviour}) {
   const name = this._name;
   const filename = `${name}/${type}/${id}`;
   if (scriptBody) {
-    this._scripts[id] = new JavaScript(name, scriptBody, this._runContext, {filename, timeout: this._timeout});
+    this._scripts[id] = new JavaScript(name, scriptBody, this._runContext, { filename, timeout: this._timeout });
   } else if (resource) {
-    this._scripts[id] = new JavaScriptResource(name, resource, this[kResources], this._runContext, {filename, timeout: this._timeout});
+    this._scripts[id] = new JavaScriptResource(name, resource, this[kResources], this._runContext, { filename, timeout: this._timeout });
   }
 };
 
-FlowScripts.prototype.getScript = function getScript(scriptType, {id}) {
+FlowScripts.prototype.getScript = function getScript(scriptType, { id }) {
   return this._scripts[id];
 };
 
@@ -117,21 +113,24 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
   const syntaxError = this[kSyntaxError];
   if (syntaxError) return next(syntaxError);
   try {
-    await this.script.runInNewContext({
-      ...executionContext,
-      Date,
-      console: {
-        log: console.log, // eslint-disable-line no-console
+    await this.script.runInNewContext(
+      {
+        ...executionContext,
+        Date,
+        console: {
+          log: console.log, // eslint-disable-line no-console
+        },
+        Buffer: {
+          from: Buffer.from,
+        },
+        contextName: this.flowName,
+        ...this._runContext,
+        next,
       },
-      Buffer: {
-        from: Buffer.from,
+      {
+        timeout: this.timeout,
       },
-      contextName: this.flowName,
-      ...this._runContext,
-      next,
-    }, {
-      timeout: this.timeout,
-    });
+    );
   } catch (err) {
     return next(new FlowScriptError(err));
   }
@@ -161,10 +160,13 @@ JavaScriptResource.prototype.execute = async function execute(executionContext, 
     if (err instanceof SyntaxError) {
       return callback(err);
     }
-    const {filename} = this.options;
+    const { filename } = this.options;
     return callback(new Error(`${filename}: script resource ${resource || this.resource} not found`));
   }
 
-  const script = new JavaScript(this.flowName, scriptBody, this._runContext, {...this.options, filename: `${this.options.filename}/${resource}`});
+  const script = new JavaScript(this.flowName, scriptBody, this._runContext, {
+    ...this.options,
+    filename: `${this.options.filename}/${resource}`,
+  });
   return script.execute(executionContext, callback);
 };

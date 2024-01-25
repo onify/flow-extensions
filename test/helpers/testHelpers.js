@@ -1,8 +1,8 @@
-import {Serializer, TypeResolver} from 'moddle-context-serializer';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
 import { Engine } from 'bpmn-engine';
-import {extensions, extendFn} from '../../src/index.js';
-import {FlowScripts} from './FlowScripts.js';
-import {promises as fs} from 'fs';
+import { extensions, extendFn } from '../../src/index.js';
+import { FlowScripts } from './FlowScripts.js';
+import { promises as fs } from 'fs';
 import * as Elements from 'bpmn-elements';
 import * as expressions from '@aircall/expression-parser';
 import BpmnModdle from 'bpmn-moddle';
@@ -57,7 +57,7 @@ async function getEngine(name, source, options) {
     source,
     moddleOptions: await getModdleExtensions(),
     ...getFlowOptions(name, options),
-    elements: {...Elements, ...options?.elements},
+    elements: { ...Elements, ...options?.elements },
   });
 }
 
@@ -68,10 +68,10 @@ async function recoverOnifyFlow(source, state, options) {
 }
 
 function getFlowOptions(name, options = {}) {
-  const {extensions: extensionsOption, services, ...rest} = options;
+  const { extensions: extensionsOption, services, ...rest } = options;
   return {
     Logger,
-    extensions: {...extensionsOption, onify: extensions},
+    extensions: { ...extensionsOption, onify: extensions },
     services: {
       httpRequest() {},
       onifyApiRequest() {},
@@ -93,13 +93,13 @@ function getFlowOptions(name, options = {}) {
 }
 
 async function getModdleExtensions() {
-  if (exts) return {...exts};
+  if (exts) return { ...exts };
   const camunda = await fs.readFile('./node_modules/camunda-bpmn-moddle/resources/camunda.json');
   exts = {
     camunda: JSON.parse(camunda),
   };
 
-  return {...exts};
+  return { ...exts };
 }
 
 export function Logger(scope) {

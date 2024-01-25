@@ -21,13 +21,7 @@ export class FormatActivity {
   resolve(elementApi) {
     let user, groups, assigneeValue, description;
     const activity = this.activity;
-    const {
-      documentation,
-      candidateUsers,
-      candidateGroups,
-      scheduledStart,
-      assignee,
-    } = activity.behaviour;
+    const { documentation, candidateUsers, candidateGroups, scheduledStart, assignee } = activity.behaviour;
 
     if (candidateUsers) user = resolveAndSplit(elementApi, candidateUsers);
     if (candidateGroups) groups = resolveAndSplit(elementApi, candidateGroups);
@@ -47,13 +41,13 @@ export class FormatActivity {
     }
 
     return {
-      ...(this.resultVariable && {resultVariable: this.resultVariable}),
-      ...(scheduledStart && activity.parent.type === 'bpmn:Process' && {scheduledStart}),
-      ...(user?.length && {candidateUsers: user}),
-      ...(groups?.length && {candidateGroups: groups}),
-      ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
-      ...(expireAt && {expireAt}),
-      ...(assigneeValue && {assignee: assigneeValue}),
+      ...(this.resultVariable && { resultVariable: this.resultVariable }),
+      ...(scheduledStart && activity.parent.type === 'bpmn:Process' && { scheduledStart }),
+      ...(user?.length && { candidateUsers: user }),
+      ...(groups?.length && { candidateGroups: groups }),
+      ...(!elementApi.content.description && description && { description: elementApi.resolveExpression(description) }),
+      ...(expireAt && { expireAt }),
+      ...(assigneeValue && { assignee: assigneeValue }),
     };
   }
 }
@@ -69,21 +63,17 @@ export class FormatProcess {
   resolve(elementApi) {
     let user, groups, description;
     const bp = this.process;
-    const {
-      documentation,
-      candidateStarterUsers,
-      candidateStarterGroups,
-    } = bp.behaviour;
+    const { documentation, candidateStarterUsers, candidateStarterGroups } = bp.behaviour;
 
     if (candidateStarterUsers) user = resolveAndSplit(elementApi, candidateStarterUsers);
     if (candidateStarterGroups) groups = resolveAndSplit(elementApi, candidateStarterGroups);
     if (documentation) description = documentation[0]?.text;
 
     return {
-      ...(user?.length && {candidateStarterUsers: user}),
-      ...(groups?.length && {candidateStarterGroups: groups}),
-      ...(!elementApi.content.description && description && {description: elementApi.resolveExpression(description)}),
-      ...(this._historyTTL && {historyTimeToLive: this._historyTTL.timer.value}),
+      ...(user?.length && { candidateStarterUsers: user }),
+      ...(groups?.length && { candidateStarterGroups: groups }),
+      ...(!elementApi.content.description && description && { description: elementApi.resolveExpression(description) }),
+      ...(this._historyTTL && { historyTimeToLive: this._historyTTL.timer.value }),
     };
   }
 }

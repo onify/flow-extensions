@@ -56,11 +56,13 @@ Feature('Flow process', () => {
 
     And('task is decorated with as expected', async () => {
       const taskApi = await wait;
-      expect(taskApi.content).to.have.property('properties').that.deep.equal({
-        process_foo: 'bar',
-        user: ['admin'],
-        role: ['admins'],
-      });
+      expect(taskApi.content)
+        .to.have.property('properties')
+        .that.deep.equal({
+          process_foo: 'bar',
+          user: ['admin'],
+          role: ['admins'],
+        });
     });
 
     let end, state;
@@ -74,7 +76,7 @@ Feature('Flow process', () => {
     });
 
     And('task is signaled', () => {
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('run completes', async () => {
@@ -90,7 +92,7 @@ Feature('Flow process', () => {
 
     And('task is signaled', () => {
       expect(flow.environment.output).to.not.have.property('result');
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('run completes', async () => {
@@ -200,7 +202,7 @@ Feature('Flow process', () => {
 
       flow = await testHelpers.getOnifyFlow(source, {
         settings: {
-          groups: {foo: 'bar'},
+          groups: { foo: 'bar' },
         },
       });
     });
@@ -300,7 +302,7 @@ Feature('Flow process', () => {
         extensions: {
           myExtension(bp) {
             if (bp.type !== 'bpmn:Process') return;
-            bp.behaviour.candidateStarterGroups = {foo: 'bar'};
+            bp.behaviour.candidateStarterGroups = { foo: 'bar' };
             return {
               activate() {},
               deactivate() {},

@@ -1,5 +1,5 @@
-import {FormatActivity, FormatProcess} from './formatters.js';
-import {InputOutput} from './IO.js';
+import { FormatActivity, FormatProcess } from './formatters.js';
+import { InputOutput } from './IO.js';
 import Connector from './Connector.js';
 import ExecutionListeners from './ExecutionListeners.js';
 import IOForm from './IOForm.js';
@@ -39,7 +39,7 @@ export function getExtensions(element, context) {
           if (ext.fields?.length) result.form = new IOForm(element, ext);
           break;
         case 'camunda:Connector': {
-          const {connectorId, inputOutput} = ext;
+          const { connectorId, inputOutput } = ext;
           const io = inputOutput && new InputOutput(`${element.id}/${ext.$type.toLowerCase()}`, inputOutput, context);
           result.Service = Connector.bind(Connector, connectorId, io);
           break;

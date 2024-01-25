@@ -25,8 +25,10 @@ export function extendFn(behaviour, context) {
     case 'bpmn:StartEvent': {
       if (!behaviour.eventDefinitions) break;
 
-      const timer = behaviour.eventDefinitions.find(({type, behaviour: edBehaviour}) => edBehaviour && type === 'bpmn:TimerEventDefinition');
-      if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, {scheduledStart: timer.behaviour.timeCycle});
+      const timer = behaviour.eventDefinitions.find(
+        ({ type, behaviour: edBehaviour }) => edBehaviour && type === 'bpmn:TimerEventDefinition',
+      );
+      if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, { scheduledStart: timer.behaviour.timeCycle });
 
       break;
     }
@@ -64,8 +66,8 @@ export function extendFn(behaviour, context) {
 function registerIOScripts(parentId, context, type, ioBehaviour) {
   if (!ioBehaviour) return;
 
-  const {inputParameters = [], outputParameters = []} = ioBehaviour;
-  for (const {$type, name, definition} of inputParameters.concat(outputParameters)) {
+  const { inputParameters = [], outputParameters = [] } = ioBehaviour;
+  for (const { $type, name, definition } of inputParameters.concat(outputParameters)) {
     if (!definition) continue;
     if (definition.$type !== 'camunda:Script') continue;
 
@@ -76,14 +78,14 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
       id: filename,
       scriptFormat: definition.scriptFormat,
       type: ioType,
-      ...(definition.value && {body: definition.value}),
-      ...(definition.resource && {resource: definition.resource}),
+      ...(definition.value && { body: definition.value }),
+      ...(definition.resource && { resource: definition.resource }),
     });
   }
 }
 
 function registerListenerScript(parentId, context, type, listener, pos) {
-  const {event, script} = listener;
+  const { event, script } = listener;
   if (!script) return;
 
   const id = `${parentId}/${type}/${event}/${pos}`;
@@ -91,8 +93,8 @@ function registerListenerScript(parentId, context, type, listener, pos) {
     id,
     scriptFormat: script.scriptFormat,
     type,
-    ...(script.value && {body: script.value}),
-    ...(script.resource && {resource: script.resource}),
+    ...(script.value && { body: script.value }),
+    ...(script.resource && { resource: script.resource }),
   });
 }
 

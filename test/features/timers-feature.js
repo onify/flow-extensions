@@ -2,7 +2,7 @@ import * as ck from 'chronokinesis';
 
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
-import {OnifyTimerEventDefinition} from '../../src/OnifyTimerEventDefinition.js';
+import { OnifyTimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
 
 Feature('Flow timers', () => {
   let blueprintSource;
@@ -31,11 +31,13 @@ Feature('Flow timers', () => {
     let timer;
     And('a timer is registered', () => {
       [timer] = flow.environment.timers.executing;
-      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
+      expect(timer.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
     });
 
     When('cron start event is cancelled', () => {
-      flow.cancelActivity({id: element.id});
+      flow.cancelActivity({ id: element.id });
     });
 
     Then('flow continues run', () => {
@@ -62,11 +64,13 @@ Feature('Flow timers', () => {
 
       And('a timer is registered', () => {
         [timer] = flow.environment.timers.executing;
-        expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
+        expect(timer.delay)
+          .to.be.above(0)
+          .and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
       });
 
       When('cron start event is cancelled', () => {
-        flow.cancelActivity({id: element.id});
+        flow.cancelActivity({ id: element.id });
       });
 
       Then('flow continues run', () => {
@@ -110,13 +114,15 @@ Feature('Flow timers', () => {
     let timer;
     And('a timer is registered', () => {
       [timer] = flow.environment.timers.executing;
-      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
+      expect(timer.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
     });
 
     let end;
     When('start event is cancelled', () => {
       end = flow.waitFor('end');
-      flow.cancelActivity({id: element.id});
+      flow.cancelActivity({ id: element.id });
     });
 
     Then('flow completes', () => {
@@ -164,14 +170,18 @@ Feature('Flow timers', () => {
     let timer1, timer2;
     And('two timers are registered', () => {
       [timer1, timer2] = flow.environment.timers.executing;
-      expect(timer1.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
-      expect(timer2.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 14, 13, 30) - new Date().getTime());
+      expect(timer1.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
+      expect(timer2.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 14, 13, 30) - new Date().getTime());
     });
 
     let end;
     When('start event is cancelled', () => {
       end = flow.waitFor('end');
-      flow.cancelActivity({id: element.id});
+      flow.cancelActivity({ id: element.id });
     });
 
     Then('flow completes', () => {
@@ -211,12 +221,14 @@ Feature('Flow timers', () => {
     });
 
     And('expire at is set at nearest occasion', () => {
-      expect(element.content).to.have.property('expireAt').that.deep.equal(new Date(Date.UTC(2022, 1, 14, 14)));
+      expect(element.content)
+        .to.have.property('expireAt')
+        .that.deep.equal(new Date(Date.UTC(2022, 1, 14, 14)));
     });
 
     When('start event is cancelled', () => {
       end = flow.waitFor('end');
-      flow.cancelActivity({id: element.id});
+      flow.cancelActivity({ id: element.id });
     });
 
     Then('flow completes', () => {
@@ -274,7 +286,9 @@ Feature('Flow timers', () => {
     let timer;
     And('a timer is registered with nearest date', () => {
       [timer] = flow.environment.timers.executing;
-      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
+      expect(timer.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
     });
   });
 
@@ -323,7 +337,9 @@ Feature('Flow timers', () => {
     let timer;
     And('unfortunately a timer is registered with cron expiration (fix in bpmn-elements)', () => {
       [timer] = flow.environment.timers.executing;
-      expect(timer.delay).to.be.above(0).and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
+      expect(timer.delay)
+        .to.be.above(0)
+        .and.equal(Date.UTC(2022, 1, 13) - new Date().getTime());
     });
   });
 
@@ -426,7 +442,7 @@ Feature('Flow timers', () => {
     let end;
     When('task is signaled', () => {
       end = flow.waitFor('leave');
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('run completes', () => {
@@ -449,12 +465,12 @@ Feature('Flow timers', () => {
 
     When('cycle times out', () => {
       flow.environment.timers.executing[0].callback();
-      flow.cancelActivity({id: 'start-cycle'});
+      flow.cancelActivity({ id: 'start-cycle' });
     });
 
     When('task is signaled', () => {
       end = flow.waitFor('leave');
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('run completes', () => {
@@ -512,7 +528,7 @@ Feature('Flow timers', () => {
     });
 
     And('task is signaled', () => {
-      flow.signal({id: 'task'});
+      flow.signal({ id: 'task' });
     });
 
     Then('flow completes', () => {

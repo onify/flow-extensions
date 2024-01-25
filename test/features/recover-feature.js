@@ -36,7 +36,7 @@ Feature('Recover flow', () => {
     });
 
     And('task is signaled', () => {
-      flow.signal({id: 'task', message: { value: 'resumed' }});
+      flow.signal({ id: 'task', message: { value: 'resumed' } });
     });
 
     Then('run is stopped', () => {
@@ -92,7 +92,7 @@ Feature('Recover flow', () => {
     });
 
     And('task is signaled', () => {
-      flow.signal({id: 'task', message: { value: 'resumed' }});
+      flow.signal({ id: 'task', message: { value: 'resumed' } });
     });
 
     Then('run is stopped', () => {
@@ -257,7 +257,7 @@ Feature('Recover flow', () => {
       flow.resume();
 
       end = flow.waitFor('end');
-      flow.signal({id: 'timers-task'});
+      flow.signal({ id: 'timers-task' });
     });
 
     Then('run completes', () => {
@@ -283,7 +283,7 @@ Feature('Recover flow', () => {
 
     When('user task is signaled', () => {
       end = flow.waitFor('end');
-      flow.signal({id: 'timers-task'});
+      flow.signal({ id: 'timers-task' });
     });
 
     Then('run completes', () => {

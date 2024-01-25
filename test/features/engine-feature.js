@@ -1,7 +1,7 @@
 import * as ck from 'chronokinesis';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 
 Feature('BPMN Engine', () => {
   let blueprintSource;
@@ -29,12 +29,12 @@ Feature('BPMN Engine', () => {
 
       listener = new EventEmitter();
       const timer = new Promise((resolve) => listener.once('activity.timer', resolve));
-      execution = await engine.execute({listener});
+      execution = await engine.execute({ listener });
 
       await timer;
 
       [element] = execution.getPostponed();
-      execution.cancelActivity({id: element.id});
+      execution.cancelActivity({ id: element.id });
     });
 
     Then('API request is pending', () => {
@@ -50,7 +50,7 @@ Feature('BPMN Engine', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'post',
         query: { tag: 'agent', async: true },
-        payload: { vars: [ '-arrSearchConfig user', '-useTemplate' ] },
+        payload: { vars: ['-arrSearchConfig user', '-useTemplate'] },
         url: '/admin/agents/task/prepareOnifyIndexAD',
       });
     });
@@ -70,11 +70,13 @@ Feature('BPMN Engine', () => {
       execution.signal({
         result: {
           response: JSON.stringify({
-            searchConfig: [{
-              user: {
-                filePath: '/user.json',
+            searchConfig: [
+              {
+                user: {
+                  filePath: '/user.json',
+                },
               },
-            }],
+            ],
           }),
         },
       });
@@ -94,7 +96,7 @@ Feature('BPMN Engine', () => {
       expect(apiCall[0]).to.deep.equal({
         method: 'post',
         query: { tag: 'agent', async: true },
-        payload: { vars: [ '/user.json', '0', '1000' ] },
+        payload: { vars: ['/user.json', '0', '1000'] },
         url: '/admin/agents/task/readDataFromJsonFile',
       });
     });
@@ -114,9 +116,11 @@ Feature('BPMN Engine', () => {
       execution.signal({
         result: {
           response: JSON.stringify({
-            records: [{
-              key: 'user-1',
-            }],
+            records: [
+              {
+                key: 'user-1',
+              },
+            ],
           }),
         },
       });

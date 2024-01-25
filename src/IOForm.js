@@ -8,11 +8,11 @@ export default class IOForm {
   resolve(elementApi) {
     const form = {};
     for (const field of this.behaviour.fields) {
-      const f = form[field.id] = {
+      const f = (form[field.id] = {
         ...field,
-        ...(field.label && {defaultValue: elementApi.resolveExpression(field.label)}),
-        ...(field.defaultValue && {defaultValue: elementApi.resolveExpression(field.defaultValue)}),
-      };
+        ...(field.label && { defaultValue: elementApi.resolveExpression(field.label) }),
+        ...(field.defaultValue && { defaultValue: elementApi.resolveExpression(field.defaultValue) }),
+      });
       if (f.properties) {
         f.properties = new IOProperties(this.activity, f.properties).resolve(elementApi);
       }

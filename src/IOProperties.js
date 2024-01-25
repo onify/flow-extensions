@@ -6,7 +6,7 @@ export default class IOProperties {
   resolve(elementApi) {
     const properties = {};
 
-    for (const {id, name, value} of this.behaviour.values) {
+    for (const { id, name, value } of this.behaviour.values) {
       properties[id || name] = elementApi.resolveExpression(value);
     }
 

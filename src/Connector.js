@@ -1,4 +1,4 @@
-import {NotImplemented} from './Errors.js';
+import { NotImplemented } from './Errors.js';
 
 export default function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);
@@ -22,7 +22,7 @@ Connector.prototype.execute = async function execute(...args) {
   if (!serviceFunction) return callback(new NotImplemented(connectorId));
 
   try {
-    const input = io && await io.getInput(activity, executionMessage);
+    const input = io && (await io.getInput(activity, executionMessage));
     await serviceFunction.call(activity, input, ...args);
   } catch (err) {
     return callback(err);
@@ -33,7 +33,7 @@ Connector.prototype.execute = async function execute(...args) {
     if (!io?.output.length) return callback(null, result);
 
     try {
-      const formattedResult = await io.getOutput(activity, {...executionMessage, ...result});
+      const formattedResult = await io.getOutput(activity, { ...executionMessage, ...result });
       return callback(null, formattedResult);
     } catch (err) {
       return callback(err);

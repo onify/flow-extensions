@@ -1,5 +1,5 @@
-import {Engine} from 'bpmn-engine';
-import {Engine as Engine14} from 'bpmn-engine-14';
+import { Engine } from 'bpmn-engine';
+import { Engine as Engine14 } from 'bpmn-engine-14';
 import * as Elements81 from 'bpmn-elements-8-1';
 import testHelpers from '../helpers/testHelpers.js';
 
@@ -54,7 +54,7 @@ describe('backward compatibility', () => {
       elements: Elements81,
       source,
       moddleOptions: await testHelpers.getModdleExtensions(),
-      extensions: {onify: extensions},
+      extensions: { onify: extensions },
       ...testHelpers.getFlowOptions('engine-14', {
         services: {
           httpRequest(...args) {
@@ -83,7 +83,7 @@ describe('backward compatibility', () => {
 
     const engine = new Engine({
       name: 'engine-last',
-      extensions: {onify: extensions},
+      extensions: { onify: extensions },
       ...testHelpers.getFlowOptions('engine-last', {
         services: {
           httpRequest(...args) {
