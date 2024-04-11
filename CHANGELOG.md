@@ -1,5 +1,9 @@
 # Changelog
 
+# unreleased
+
+- update all dev dependencies and run tests
+
 # 7.1.0
 
 - add process attribute `historyTimeToLive` to process environment variables when running
