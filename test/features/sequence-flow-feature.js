@@ -108,6 +108,7 @@ Feature('Sequence flow', () => {
   });
 
   Scenario('Sequence flow with properties', () => {
+    /** @type {import('bpmn-elements').Definition} */
     let flow;
     const messages = [];
     Given('a flow with one conditional sequence flows with properties', async () => {
@@ -220,6 +221,78 @@ Feature('Sequence flow', () => {
       expect(message.content.inbound[0].properties).to.not.be.ok;
     });
 
+    Given('flow with condition that address properties', async () => {
+      const source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <startEvent id="start" default="to-join2">
+            <extensionElements>
+              <camunda:properties>
+                <camunda:property name="prop1" value="\${false}" />
+              </camunda:properties>
+            </extensionElements>
+          </startEvent>
+          <sequenceFlow id="to-join1" sourceRef="start" targetRef="join">
+            <conditionExpression xsi:type="tFormalExpression" language="js">
+              next(null, content.properties.prop1);
+            </conditionExpression>
+            <extensionElements>
+              <camunda:properties>
+                <camunda:property name="prop1" value="\${true}" />
+              </camunda:properties>
+            </extensionElements>
+          </sequenceFlow>
+          <sequenceFlow id="to-join2" sourceRef="start" targetRef="join" />
+          <parallelGateway id="join" />
+          <sequenceFlow id="to-task" sourceRef="join" targetRef="task" />
+          <task id="task" default="to-end2" />
+          <sequenceFlow id="to-end1" sourceRef="task" targetRef="end">
+            <conditionExpression xsi:type="tFormalExpression" language="js">
+              next(null, content.inbound[0].result);
+            </conditionExpression>
+            <extensionElements>
+              <camunda:properties>
+                <camunda:property name="prop2" value="\${true}" />
+              </camunda:properties>
+            </extensionElements>
+          </sequenceFlow>
+          <sequenceFlow id="to-end2" sourceRef="task" targetRef="end" />
+          <endEvent id="end" />
+        </process>
+       </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        types: {
+          SequenceFlow: OnifySequenceFlow,
+        },
+      });
+    });
+
+    let sourceActivity;
+    let sourceEnd;
+    When('ran', async () => {
+      sourceActivity = flow.getActivityById('start');
+
+      sourceEnd = sourceActivity.waitFor('end');
+
+      end = flow.waitFor('end');
+      await flow.run();
+    });
+
+    Then('expected sequence flow was taken', async () => {
+      await end;
+      expect(sourceActivity.outbound[0].counters).to.have.property('take', 1);
+    });
+
+    And('sequence flow source end message kept property values', async () => {
+      const source = await sourceEnd;
+      expect(source.content.properties).to.have.property('prop1', false);
+    });
+
+    And('second sequence flow that address first sequence flow result was taken', () => {
+      expect(flow.getActivityById('join').outbound[0].counters).to.have.property('take', 1);
+    });
+
     Given('a flow with malformatted sequence flow property expression', async () => {
       const source = `<?xml version="1.0" encoding="UTF-8"?>
       <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
@@ -285,6 +358,85 @@ Feature('Sequence flow', () => {
     Then('flow run fails due to invalid condition', async () => {
       const error = await end;
       expect(error).to.match(/Parser Error/);
+    });
+  });
+
+  Scenario('a flow with sequence flow property expression function', () => {
+    let source;
+    let options;
+    let flow;
+    Given('a flow matching scenario', () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true">
+          <startEvent id="start" />
+          <sequenceFlow id="to-end" sourceRef="start" targetRef="end">
+            <extensionElements>
+              <camunda:properties>
+                <camunda:property name="prop1" value="\${environment.services.propfn(environment.variables)}" />
+              </camunda:properties>
+            </extensionElements>
+          </sequenceFlow>
+          <endEvent id="end" />
+        </process>
+       </definitions>`;
+
+      options = {
+        services: {
+          propfn(variables) {
+            const count = ++variables.count;
+            if (count > 2) throw new Error('Testing');
+            return true;
+          },
+        },
+        variables: {
+          count: 0,
+        },
+        types: {
+          SequenceFlow: OnifySequenceFlow,
+        },
+      };
+    });
+
+    let end;
+    When('ran', async () => {
+      flow = await testHelpers.getOnifyFlow(source);
+      end = flow.waitFor('end');
+      await flow.run();
+    });
+
+    Then('flow completes', () => {
+      return end;
+    });
+
+    When('ran again and expression property function fails when resolving properties', async () => {
+      flow = await testHelpers.getOnifyFlow(source, options);
+
+      flow.environment.variables.count = 2;
+
+      end = flow.waitFor('end').catch((err) => err);
+
+      await flow.run();
+    });
+
+    Then('flow run fails due to expression throwing error', async () => {
+      const error = await end;
+      expect(error).to.match(/Testing/);
+    });
+
+    When('ran again and expression property function fails when resolving result', async () => {
+      flow = await testHelpers.getOnifyFlow(source, options);
+
+      flow.environment.variables.count = 1;
+
+      end = flow.waitFor('end').catch((err) => err);
+
+      await flow.run();
+    });
+
+    Then('flow run fails due to expression throwing error', async () => {
+      const error = await end;
+      expect(error).to.match(/Testing/);
     });
   });
 

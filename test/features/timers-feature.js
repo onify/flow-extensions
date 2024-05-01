@@ -3,6 +3,7 @@ import * as ck from 'chronokinesis';
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
 import { OnifyTimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
+import { TimerEventDefinition } from 'bpmn-elements';
 
 Feature('Flow timers', () => {
   let blueprintSource;
@@ -45,37 +46,25 @@ Feature('Flow timers', () => {
       expect(element.type).to.equal('bpmn:ServiceTask');
     });
 
-    describe('using OnifyTimerEventDefinition', () => {
-      When('started with extended TimerEventDefinition', async () => {
+    describe('using bpmn-elements TimerEventDefinition', () => {
+      let fail;
+      When('started without extended TimerEventDefinition', async () => {
         flow = await testHelpers.getOnifyFlow(blueprintSource, {
           types: {
-            TimerEventDefinition: OnifyTimerEventDefinition,
+            TimerEventDefinition,
           },
         });
 
-        ck.freeze(Date.UTC(2022, 1, 14, 12, 0));
+        fail = flow.waitFor('error');
         flow.run();
       });
 
-      Then('run is paused at start event', () => {
-        [element] = flow.getPostponed();
-        expect(element.type).to.equal('bpmn:StartEvent');
+      Then('run fails', () => {
+        return fail;
       });
 
-      And('a timer is registered', () => {
-        [timer] = flow.environment.timers.executing;
-        expect(timer.delay)
-          .to.be.above(0)
-          .and.equal(Date.UTC(2022, 1, 15) - new Date().getTime());
-      });
-
-      When('cron start event is cancelled', () => {
-        flow.cancelActivity({ id: element.id });
-      });
-
-      Then('flow continues run', () => {
-        [element] = flow.getPostponed();
-        expect(element.type).to.equal('bpmn:ServiceTask');
+      And('a no timer is registered', () => {
+        expect(flow.environment.timers.executing).to.have.length(0);
       });
     });
   });
@@ -220,10 +209,12 @@ Feature('Flow timers', () => {
       expect(element.content).to.have.property('description', 'Glockenspiel');
     });
 
-    And('expire at is set at nearest occasion', () => {
-      expect(element.content)
-        .to.have.property('expireAt')
-        .that.deep.equal(new Date(Date.UTC(2022, 1, 14, 14)));
+    And('two start timers are running', () => {
+      const started = element.getExecuting();
+      expect(started).to.have.length(2);
+
+      expect(started[0].content).to.have.property('expireAt');
+      expect(started[1].content).to.have.property('expireAt');
     });
 
     When('start event is cancelled', () => {
@@ -564,7 +555,43 @@ Feature('Flow timers', () => {
 
     Then('an error is thrown', async () => {
       const err = await error;
-      expect(err.content.error).to.match(/Validation error/);
+      expect(err.content.error).to.be.instanceof(RangeError);
+    });
+  });
+
+  Scenario('Invalid time date', () => {
+    let flow;
+    Given('a flow matching scenario', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start">
+            <timerEventDefinition>
+              <timeDate xsi:type="tFormalExpression">2023-02-29</timeDate>
+            </timerEventDefinition>
+          </startEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        types: {
+          TimerEventDefinition: OnifyTimerEventDefinition,
+        },
+      });
+    });
+
+    let error;
+    When('started', () => {
+      error = flow.waitFor('error');
+      flow.run();
+    });
+
+    Then('an error is thrown', async () => {
+      const err = await error;
+      expect(err.content.error).to.be.instanceof(RangeError);
     });
   });
 

@@ -7,6 +7,7 @@ import * as Elements from 'bpmn-elements';
 import * as expressions from '@aircall/expression-parser';
 import BpmnModdle from 'bpmn-moddle';
 import Debug from 'debug';
+import { OnifyTimerEventDefinition as TimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
 
 let exts;
 
@@ -40,7 +41,7 @@ async function getOnifyFlow(source, options = {}) {
 
   const { types, ...environmentOptions } = options || {};
 
-  const serialized = Serializer(moddle, TypeResolver({ ...Elements, ...types }), extendFn);
+  const serialized = Serializer(moddle, TypeResolver({ ...Elements, TimerEventDefinition, ...types }), extendFn);
   return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, environmentOptions));
 }
 
@@ -57,7 +58,7 @@ async function getEngine(name, source, options) {
     source,
     moddleOptions: await getModdleExtensions(),
     ...getFlowOptions(name, options),
-    elements: { ...Elements, ...options?.elements },
+    elements: { ...Elements, TimerEventDefinition, ...options?.elements },
   });
 }
 

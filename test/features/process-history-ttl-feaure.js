@@ -1,5 +1,5 @@
+import { parseInterval } from '@0dep/piso';
 import testHelpers from '../helpers/testHelpers.js';
-import { ISODuration } from 'bpmn-elements';
 
 Feature('Process history ttl', () => {
   Scenario('Flow with process history time to live with number of days', () => {
@@ -32,7 +32,7 @@ Feature('Process history ttl', () => {
     });
 
     And('it is parsable as ISO8601 duration', () => {
-      expect(ISODuration.parse(historyTtl).days).to.equal(180);
+      expect(parseInterval(historyTtl).duration.result.D).to.equal(180);
     });
 
     let processEnd, state;

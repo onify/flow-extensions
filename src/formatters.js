@@ -1,7 +1,3 @@
-import cronParser from 'cron-parser';
-
-const iso8601cycle = /^\s*(R\d+\/)?P\w+/i;
-
 export class FormatActivity {
   constructor(activity) {
     this.activity = activity;
@@ -10,7 +6,7 @@ export class FormatActivity {
     let timeCycles;
     if (activity.eventDefinitions) {
       for (const ed of activity.eventDefinitions.filter((e) => e.type === 'bpmn:TimerEventDefinition')) {
-        if (ed.supports?.includes('cron')) continue;
+        if (!ed.supports?.includes('cron')) continue;
         if (!('timeCycle' in ed)) continue;
         timeCycles = timeCycles || [];
         timeCycles.push(ed.timeCycle);
@@ -28,25 +24,12 @@ export class FormatActivity {
     if (assignee) assigneeValue = elementApi.resolveExpression(assignee);
     if (documentation) description = documentation[0]?.text;
 
-    let expireAt;
-    const timeCycles = this.timeCycles;
-    if (timeCycles) {
-      for (const cycle of timeCycles) {
-        const cron = elementApi.resolveExpression(cycle);
-        if (!cron || iso8601cycle.test(cron)) continue;
-
-        const expireAtDt = cronParser.parseExpression(cron).next().toDate();
-        if (!expireAt || expireAtDt < expireAt) expireAt = expireAtDt;
-      }
-    }
-
     return {
       ...(this.resultVariable && { resultVariable: this.resultVariable }),
       ...(scheduledStart && activity.parent.type === 'bpmn:Process' && { scheduledStart }),
       ...(user?.length && { candidateUsers: user }),
       ...(groups?.length && { candidateGroups: groups }),
       ...(!elementApi.content.description && description && { description: elementApi.resolveExpression(description) }),
-      ...(expireAt && { expireAt }),
       ...(assigneeValue && { assignee: assigneeValue }),
     };
   }

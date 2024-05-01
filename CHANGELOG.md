@@ -2,7 +2,14 @@
 
 # unreleased
 
-- update all dev dependencies and run tests
+# 8.0.0
+
+Stop execution if an invalid time duration, cycle, or date is encountered.
+
+## Breaking
+
+- invalid TimerEventDefinition timer type value stops execution if using [`bpmn-elements@14`](https://github.com/paed01/bpmn-elements/blob/master/CHANGELOG.md)
+- remove expireAt formatting from events with TimerEventDefinion(s)
 
 # 7.1.0
 

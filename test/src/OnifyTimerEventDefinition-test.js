@@ -109,7 +109,7 @@ describe('OnifyTimerEventDefinition', () => {
       ck.freeze(Date.UTC(2023, 4, 27));
       expect(() => {
         def.parse('timeCycle', 'yesterday');
-      }).to.throw('invalid');
+      }).to.throw(RangeError);
     });
   });
 });

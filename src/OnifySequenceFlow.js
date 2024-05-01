@@ -30,7 +30,18 @@ export class OnifySequenceFlow extends SequenceFlow {
     const properties = this.extensions.properties;
     if (!properties) return super.evaluate(fromMessage, callback);
 
-    super.evaluate(fromMessage, (err, result) => {
+    try {
+      const preProperties = properties.resolve(this.getApi(fromMessage));
+      var evaluateMessage = fromMessage;
+      evaluateMessage.content.properties = {
+        ...fromMessage.content.properties,
+        ...preProperties,
+      };
+    } catch (err) {
+      return callback(err);
+    }
+
+    super.evaluate(evaluateMessage, (err, result) => {
       if (err) return callback(err);
 
       try {
@@ -38,7 +49,7 @@ export class OnifySequenceFlow extends SequenceFlow {
         if (result) {
           overriddenResult = {
             ...(typeof result === 'object' && result),
-            properties: properties.resolve(this.getApi(fromMessage)),
+            properties: properties.resolve(this.getApi(evaluateMessage)),
           };
         }
         return callback(err, overriddenResult);
