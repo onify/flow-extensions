@@ -78,6 +78,14 @@ export default [
     },
   },
   {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
     files: ['test/**/*.js'],
     languageOptions: {
       globals: {

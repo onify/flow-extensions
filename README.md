@@ -11,10 +11,14 @@
 
 ## Bpmn engine example
 
-```js
-const { Engine } = require('bpmn-engine');
-const { extensions } = require('@onify/flow-extensions');
-const FlowScripts = require('@onify/flow-extensions/dist/src/FlowScripts');
+```javascript
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { Engine } from 'bpmn-engine';
+import { extensions } from '@onify/flow-extensions';
+import { FlowScripts } from '@onify/flow-extensions/FlowScripts';
+
+const nodeRequire = createRequire(fileURLToPath(import.meta.url));
 
 const source = `
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -23,7 +27,7 @@ const source = `
   <process id="theProcess" isExecutable="true">
     <serviceTask id="task1" camunda:expression="\${environment.services.serviceFn}" camunda:resultVariable="result" />
     <sequenceFlow id="to-task2" sourceRef="task1" targetRef="task2" />
-    <scriptTask id="task2" camunda:resultVariable="out">
+    <scriptTask id="task2" camunda:resultVariable="out" scriptFormat="js">
       <script>
         next(null, myContextFn());
       </script>
@@ -36,7 +40,7 @@ const engine = new Engine({
   name,
   source,
   moddleOptions: {
-    camunda: require('camunda-bpmn-moddle/resources/camunda.json'),
+    camunda: nodeRequire('camunda-bpmn-moddle/resources/camunda.json'),
   },
   services: {
     serviceFn(scope, callback) {
@@ -61,12 +65,15 @@ engine.execute((err, instance) => {
 
 ## Extract scripts with extend function
 
-```js
-const { extendFn } = require('@onify/flow-extensions');
+```javascript
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import BpmnModdle from 'bpmn-moddle';
+import * as Elements from 'bpmn-elements';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
+import { extendFn } from '@onify/flow-extensions';
 
-const BpmnModdle = require('bpmn-moddle');
-const Elements = require('bpmn-elements');
-const { default: Serializer, TypeResolver } = require('moddle-context-serializer');
+const nodeRequire = createRequire(fileURLToPath(import.meta.url));
 
 const source = `
 <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -97,7 +104,7 @@ const source = `
       </extensionElements>
     </serviceTask>
     <sequenceFlow id="to-task2" sourceRef="task1" targetRef="task2" />
-    <scriptTask id="task2" camunda:resultVariable="out">
+    <scriptTask id="task2" camunda:resultVariable="out" scriptFormat="js">
       <script>
         next(null, 2);
       </script>
@@ -105,14 +112,85 @@ const source = `
   </process>
 </definitions>`;
 
-(async () => {
-  const moddle = await getModdleContext(source, {
-    camunda: require('camunda-bpmn-moddle/resources/camunda.json'),
+getScripts(source).then(console.log).catch(console.error);
+
+async function getScripts(bpmnSource) {
+  const moddle = await getModdleContext(bpmnSource, {
+    camunda: nodeRequire('camunda-bpmn-moddle/resources/camunda.json'),
   });
 
   const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
-  console.log(serialized.elements.scripts);
-})();
+  return serialized.elements.scripts;
+}
+
+function getModdleContext(source, options) {
+  const bpmnModdle = new BpmnModdle(options);
+  return bpmnModdle.fromXML(Buffer.isBuffer(source) ? source.toString() : source.trim());
+}
+```
+
+## Extract timers
+
+```javascript
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import BpmnModdle from 'bpmn-moddle';
+import * as Elements from 'bpmn-elements';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
+import { extendFn, OnifyTimerEventDefinition } from '@onify/flow-extensions';
+
+const nodeRequire = createRequire(fileURLToPath(import.meta.url));
+
+const source = `
+<definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <process id="cycle-1" name="Onify start at time cycle" isExecutable="true" camunda:historyTimeToLive="PT180M">
+    <startEvent id="start">
+      <timerEventDefinition>
+        <timeCycle xsi:type="tFormalExpression">0 1 * * *</timeCycle>
+      </timerEventDefinition>
+    </startEvent>
+    <sequenceFlow id="to-task" sourceRef="start" targetRef="task" />
+    <userTask id="task" />
+    <boundaryEvent id="bound-timer" cancelActivity="false" attachedToRef="task">
+      <timerEventDefinition>
+        <timeDuration xsi:type="tFormalExpression">R3/PT1M</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="to-wait" sourceRef="task" targetRef="wait" />
+    <intermediateThrowEvent id="timer">
+      <timerEventDefinition>
+        <timeCycle xsi:type="tFormalExpression">\${environment.settings.postpone}</timeCycle>
+      </timerEventDefinition>
+    </intermediateThrowEvent>
+    <sequenceFlow id="to-end" sourceRef="wait" targetRef="end" />
+    <endEvent id="end" />
+  </process>
+</definitions>`;
+
+getTimers(source).then(console.log).catch(console.error);
+
+const dummyEventActivity = { broker: {}, environment: { Logger() {} } };
+
+async function getTimers(bpmnSource) {
+  const moddle = await getModdleContext(bpmnSource, {
+    camunda: nodeRequire('camunda-bpmn-moddle/resources/camunda.json'),
+  });
+
+  const serialized = Serializer(moddle, TypeResolver(Elements), extendFn);
+
+  for (const t of serialized.elements.timers) {
+    const ed = new OnifyTimerEventDefinition(dummyEventActivity, t.timer);
+
+    try {
+      t.parsed = ed.parse(t.timer.timerType, t.timer.value);
+    } catch {}
+  }
+
+  return serialized.elements.timers;
+}
 
 function getModdleContext(source, options) {
   const bpmnModdle = new BpmnModdle(options);
@@ -122,11 +200,15 @@ function getModdleContext(source, options) {
 
 ## Extend sequence flow with properties and take listeners
 
-```js
-const { OnifySequenceFlow, extensions } = require('@onify/flow-extensions');
-const FlowScripts = require('@onify/flow-extensions/dist/src/FlowScripts');
-const { Engine } = require('bpmn-engine');
-const Elements = require('bpmn-elements');
+```javascript
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { Engine } from 'bpmn-engine';
+import * as Elements from 'bpmn-elements';
+import { OnifySequenceFlow, extensions } from '@onify/flow-extensions';
+import { FlowScripts } from '@onify/flow-extensions/FlowScripts';
+
+const nodeRequire = createRequire(fileURLToPath(import.meta.url));
 
 const source = `
 <?xml version="1.0" encoding="UTF-8"?>
@@ -191,7 +273,7 @@ const engine = new Engine({
   name: 'sequence flow extension',
   source,
   moddleOptions: {
-    camunda: require('camunda-bpmn-moddle/resources/camunda.json'),
+    camunda: nodeRequire('camunda-bpmn-moddle/resources/camunda.json'),
   },
   extensions: {
     onify: extensions,
@@ -200,6 +282,11 @@ const engine = new Engine({
   elements: {
     ...Elements,
     SequenceFlow: OnifySequenceFlow,
+  },
+  variables: {
+    required: {
+      input: true,
+    },
   },
 });
 

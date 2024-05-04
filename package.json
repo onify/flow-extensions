@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -8,8 +8,16 @@
   "types": "./index.d.ts",
   "sideEffects": false,
   "exports": {
-    "import": "./src/index.js",
-    "require": "./dist/index.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./src/index.js"
+    },
+    "./FlowScripts": {
+      "types": "./types/index.d.ts",
+      "require": "./dist/FlowScripts.js",
+      "import": "./dist/FlowScripts.js"
+    }
   },
   "scripts": {
     "test": "mocha -R dot",
@@ -17,6 +25,7 @@
     "lint": "eslint . --cache && prettier . --check --cache",
     "prepare": "npm run dist",
     "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
+    "test:md": "node --experimental-vm-modules --no-warnings scripts/test-markdown.js ./README.md",
     "test:lcov": "c8 -r lcov mocha && npm run lint",
     "cov:html": "c8 mocha -R dot && c8 report --reporter html"
   },
@@ -55,6 +64,7 @@
     "mocha": "^10.2.0",
     "mocha-cakes-2": "^3.3.0",
     "moddle-context-serializer": "^4.1.1",
+    "nock": "^13.5.4",
     "prettier": "^3.2.4"
   },
   "peerDependencies": {
@@ -67,7 +77,8 @@
   "files": [
     "src",
     "dist",
-    "index.d.ts"
+    "types",
+    "FlowScripts.d.ts"
   ],
   "c8": {
     "exclude": [

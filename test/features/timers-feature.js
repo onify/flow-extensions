@@ -3,7 +3,7 @@ import * as ck from 'chronokinesis';
 import testHelpers from '../helpers/testHelpers.js';
 import factory from '../helpers/factory.js';
 import { OnifyTimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
-import { TimerEventDefinition } from 'bpmn-elements';
+import { TimerEventDefinition, RunError } from 'bpmn-elements';
 
 Feature('Flow timers', () => {
   let blueprintSource;
@@ -554,8 +554,9 @@ Feature('Flow timers', () => {
     });
 
     Then('an error is thrown', async () => {
-      const err = await error;
-      expect(err.content.error).to.be.instanceof(RangeError);
+      const err = (await error).content.error;
+      expect(err).to.be.instanceof(RunError);
+      expect(err.inner).to.be.instanceof(RangeError);
     });
   });
 
@@ -590,8 +591,9 @@ Feature('Flow timers', () => {
     });
 
     Then('an error is thrown', async () => {
-      const err = await error;
-      expect(err.content.error).to.be.instanceof(RangeError);
+      const err = (await error).content.error;
+      expect(err).to.be.instanceof(RunError);
+      expect(err.inner).to.be.instanceof(RangeError);
     });
   });
 
