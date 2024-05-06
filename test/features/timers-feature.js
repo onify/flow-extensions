@@ -556,7 +556,97 @@ Feature('Flow timers', () => {
     Then('an error is thrown', async () => {
       const err = (await error).content.error;
       expect(err).to.be.instanceof(RunError);
+      expect(err.inner).to.be.instanceof(Error);
+    });
+
+    Given('a flow with another invalid starting cron', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">0 0 0 * *</timeCycle>
+            </timerEventDefinition>
+          </startEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    When('started', () => {
+      error = flow.waitFor('error');
+      flow.run();
+    });
+
+    Then('an error is thrown', async () => {
+      const err = (await error).content.error;
+      expect(err).to.be.instanceof(RunError);
+      expect(err.message).to.match(/constraint/i);
+      expect(err.inner).to.be.instanceof(Error);
+    });
+
+    Given('a flow with invalid interval', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">PT2.1M1S</timeCycle>
+            </timerEventDefinition>
+          </startEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    When('started', () => {
+      error = flow.waitFor('error');
+      flow.run();
+    });
+
+    Then('an error is thrown', async () => {
+      const err = (await error).content.error;
+      expect(err).to.be.instanceof(RunError);
       expect(err.inner).to.be.instanceof(RangeError);
+      expect(err.inner.message).to.match(/^ISO 8601 duration fractions/i);
+    });
+
+    Given('a flow with invalid date', async () => {
+      const source = `
+      <definitions id="Def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="process-1" name="Onify Flow" isExecutable="true">
+          <startEvent id="start">
+            <timerEventDefinition>
+              <timeCycle xsi:type="tFormalExpression">2023-02-31</timeCycle>
+            </timerEventDefinition>
+          </startEvent>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    When('started', () => {
+      error = flow.waitFor('error');
+      flow.run();
+    });
+
+    Then('an error is thrown', async () => {
+      const err = (await error).content.error;
+      expect(err).to.be.instanceof(RunError);
+      expect(err.inner).to.be.instanceof(RangeError);
+      expect(err.inner.message).to.match(/^Invalid ISO 8601 date/i);
     });
   });
 

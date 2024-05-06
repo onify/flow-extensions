@@ -2,6 +2,14 @@
 
 # unreleased
 
+# 8.0.2
+
+- rearrange time cycle parsing to rethrow proper cron parsing error
+
+# 8.0.1
+
+- fix FlowScripts export
+
 # 8.0.0
 
 Stop execution if an invalid time duration, cycle, or date is encountered.
