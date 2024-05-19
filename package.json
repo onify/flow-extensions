@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -25,7 +25,7 @@
     "lint": "eslint . --cache && prettier . --check --cache",
     "prepare": "npm run dist",
     "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
-    "test:md": "node --experimental-vm-modules --no-warnings scripts/test-markdown.js ./README.md",
+    "test:md": "texample ./README.md",
     "test:lcov": "c8 -r lcov mocha && npm run lint",
     "cov:html": "c8 mocha -R dot && c8 report --reporter html"
   },
@@ -52,7 +52,7 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/register": "^7.23.7",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
-    "bpmn-engine": "^20.0.1",
+    "bpmn-engine": "^21.1.0",
     "bpmn-engine-14": "npm:bpmn-engine@14",
     "bpmn-moddle": "^9.0.1",
     "c8": "^9.1.0",
@@ -60,15 +60,16 @@
     "chai": "^5.0.3",
     "chronokinesis": "^6.0.0",
     "debug": "^4.3.4",
-    "eslint": "^9.0.0",
+    "eslint": "^9.3.0",
     "mocha": "^10.2.0",
     "mocha-cakes-2": "^3.3.0",
     "moddle-context-serializer": "^4.1.1",
     "nock": "^13.5.4",
-    "prettier": "^3.2.4"
+    "prettier": "^3.2.4",
+    "texample": "^0.0.5"
   },
   "peerDependencies": {
-    "bpmn-elements": "^14.0.0"
+    "bpmn-elements": "^14.1.0"
   },
   "dependencies": {
     "@0dep/piso": "^0.1.3",
