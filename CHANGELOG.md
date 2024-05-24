@@ -2,6 +2,11 @@
 
 # unreleased
 
+# 8.0.3
+
+- add iso8601 to OnifyTimerEventDefinition supports list to avoid confusion
+- fix extensions argument context type
+
 # 8.0.2
 
 - rearrange time cycle parsing to rethrow proper cron parsing error

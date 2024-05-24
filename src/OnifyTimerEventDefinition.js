@@ -7,7 +7,7 @@ export class OnifyTimerEventDefinition extends TimerEventDefinition {
   constructor(activity, def) {
     super(activity, def);
     Object.defineProperty(this, 'supports', {
-      value: ['cron'],
+      value: ['cron', 'iso8601'],
     });
   }
   parse(timerType, value) {
