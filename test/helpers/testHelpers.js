@@ -19,6 +19,7 @@ export default {
   Logger,
   recoverOnifyFlow,
   getEngine,
+  parseOnifyFlow,
 };
 
 function moddleContext(source, options) {
@@ -30,19 +31,27 @@ function moddleContext(source, options) {
  * Get Definition as Onify flow with extensions
  * @param {string | Buffer} source BPMN source
  * @param {import('bpmn-elements').EnvironmentOptions} options Definition options
- * @returns {Promise<import('bpmn-elements').Definition>}
  */
 async function getOnifyFlow(source, options = {}) {
+  const { types, ...environmentOptions } = options;
+  const serialized = await parseOnifyFlow(source, { types });
+
+  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, environmentOptions));
+}
+
+/**
+ * Parse source Onify flow with extensions
+ * @param {string | Buffer} source BPMN source
+ * @param {import('bpmn-elements').EnvironmentOptions} options Definition options
+ */
+async function parseOnifyFlow(source, options = {}) {
   const moddle = await moddleContext(source, await getModdleExtensions());
   if (moddle.warnings?.length) {
     const logger = Logger('bpmn-moddle');
     for (const w of moddle.warnings) logger.warn(w);
   }
 
-  const { types, ...environmentOptions } = options || {};
-
-  const serialized = Serializer(moddle, TypeResolver({ ...Elements, TimerEventDefinition, ...types }), extendFn);
-  return new Elements.Definition(new Elements.Context(serialized), getFlowOptions(serialized.name || serialized.id, environmentOptions));
+  return Serializer(moddle, TypeResolver({ ...Elements, TimerEventDefinition, ...options.types }), extendFn);
 }
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "8.0.3",
+  "version": "8.1.0",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -20,13 +20,13 @@
     }
   },
   "scripts": {
-    "test": "mocha -R dot",
+    "test": "mocha",
     "posttest": "npm run lint && npm run dist && texample",
     "lint": "eslint . --cache && prettier . --check --cache",
     "prepare": "npm run dist",
     "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
     "test:lcov": "c8 -r lcov mocha && npm run lint",
-    "cov:html": "c8 mocha -R dot && c8 report --reporter html"
+    "cov:html": "c8 mocha && c8 report --reporter html"
   },
   "keywords": [
     "onify",

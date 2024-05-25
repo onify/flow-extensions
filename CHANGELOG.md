@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 8.1.0
+
+- process history time to live negative and zero days both result in time duration `P0D`
+
 # 8.0.3
 
 - add iso8601 to OnifyTimerEventDefinition supports list to avoid confusion

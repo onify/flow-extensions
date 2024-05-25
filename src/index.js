@@ -102,8 +102,9 @@ function getHistoryTimeToLiveTimer(behaviour) {
   const { id, $type: type, historyTimeToLive } = behaviour;
 
   let value = historyTimeToLive;
-  if (/^\d+$/.test(historyTimeToLive)) {
-    value = `P${historyTimeToLive}D`;
+  let days;
+  if (!isNaN((days = Number(value)))) {
+    value = `P${days > 0 ? days : 0}D`;
   }
   return {
     id: `${type}/${id}:historyTimeToLive`,
