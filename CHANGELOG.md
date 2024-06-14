@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 8.2.0
+
+- allow bpmn-elements@>=14 since bpmn-elements has moved beyond 14, and the tests still work
+
 # 8.1.0
 
 - process history time to live negative and zero days both result in time duration `P0D`
