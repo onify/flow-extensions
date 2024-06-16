@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 8.2.1
+
+- bump [0dep/piso@1](https://www.npmjs.com/package/@0dep/piso)
+
 # 8.2.0
 
 - allow bpmn-elements@>=14 since bpmn-elements has moved beyond 14, and the tests still work
