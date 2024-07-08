@@ -1,6 +1,8 @@
 import { Serializer, TypeResolver } from 'moddle-context-serializer';
-import { extendFn } from '../../src/index.js';
+import { JavaScripts } from 'bpmn-engine';
 import * as Elements from 'bpmn-elements';
+
+import { extendFn } from '../../src/index.js';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
 
@@ -104,8 +106,9 @@ Feature('execution listeners', () => {
   Scenario('Sub process execution listener script', () => {
     let flow, end;
     const events = [];
+    let source;
     When('sub process runs with execution listeners', async () => {
-      const source = `
+      source = `
       <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
         xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
         targetNamespace="http://bpmn.io/schema/bpmn">
@@ -114,13 +117,13 @@ Feature('execution listeners', () => {
             <task id="task">
               <extensionElements>
                 <camunda:executionListener event="start">
-                  <camunda:script scriptFormat="js">
+                  <camunda:script scriptFormat="javascript">
                     environment.services.trigger(content.id, 'start');
                     next();
                   </camunda:script>
                 </camunda:executionListener>
                 <camunda:executionListener event="end">
-                  <camunda:script scriptFormat="js">
+                  <camunda:script scriptFormat="javascript">
                     environment.services.trigger(content.id, 'end');
                     next();
                   </camunda:script>
@@ -129,13 +132,13 @@ Feature('execution listeners', () => {
             </task>
             <extensionElements>
               <camunda:executionListener event="start">
-                <camunda:script scriptFormat="js">
+                <camunda:script scriptFormat="javascript">
                   environment.services.trigger(content.id, 'start');
                   next();
                 </camunda:script>
               </camunda:executionListener>
               <camunda:executionListener event="end">
-                <camunda:script scriptFormat="js">
+                <camunda:script scriptFormat="javascript">
                   environment.services.trigger(content.id, 'end');
                   next();
                 </camunda:script>
@@ -160,8 +163,9 @@ Feature('execution listeners', () => {
       expect(events).to.deep.equal(['substart', 'taskstart', 'taskend', 'subend']);
     });
 
+    let multiInstanceSource;
     When('multi-instance sub process runs with execution listeners', async () => {
-      const source = `
+      multiInstanceSource = `
       <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
         xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
         targetNamespace="http://bpmn.io/schema/bpmn">
@@ -204,7 +208,7 @@ Feature('execution listeners', () => {
 
       events.splice(0);
 
-      flow = await testHelpers.getOnifyFlow(source, {
+      flow = await testHelpers.getOnifyFlow(multiInstanceSource, {
         services: {
           trigger(id, event) {
             events.push(id + event);
@@ -221,6 +225,29 @@ Feature('execution listeners', () => {
     Then('run completes triggering sub process execution listeners once', async () => {
       await end;
       expect(events).to.deep.equal(['substart', 'taskstart', 'taskend', 'taskstart', 'taskend', 'subend']);
+    });
+
+    When('ran using bpmn-engine built-in scripts', async () => {
+      events.splice(0);
+
+      flow = await testHelpers.getOnifyFlow(source, {
+        scripts: new JavaScripts(true),
+        services: {
+          trigger(id, event) {
+            events.push(id + event);
+          },
+        },
+        variables: {
+          list: [1, 2],
+        },
+      });
+      end = flow.waitFor('end');
+      flow.run();
+    });
+
+    Then('run completes triggering sub process execution listeners once', async () => {
+      await end;
+      expect(events).to.deep.equal(['substart', 'taskstart', 'taskend', 'subend']);
     });
   });
 

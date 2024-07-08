@@ -2,6 +2,11 @@
 
 # unreleased
 
+# 8.2.2
+
+- bump [0dep/piso@2](https://www.npmjs.com/package/@0dep/piso)
+- fix bug where environment was not passed when registering execution listener script, preventing bpmn-engine built-in scripts to execute
+
 # 8.2.1
 
 - bump [0dep/piso@1](https://www.npmjs.com/package/@0dep/piso)

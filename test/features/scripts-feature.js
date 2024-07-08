@@ -1,6 +1,62 @@
+import { JavaScripts } from 'bpmn-engine';
+
 import testHelpers from '../helpers/testHelpers.js';
 
 Feature('Flow scripts', () => {
+  Scenario('IO script sets output parameter', () => {
+    let flow;
+    let source;
+    Given('a flow matching scenario', async () => {
+      source = `<?xml version="1.0" encoding="UTF-8"?>
+      <definitions id="command-definition" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="my-process" isExecutable="true" camunda:candidateStarterGroups="test-user">
+          <task id="task">
+            <extensionElements>
+              <camunda:inputOutput>
+                <camunda:outputParameter name="url">
+                  <camunda:script scriptFormat="javascript">next(null, 'https://example.com')</camunda:script>
+                </camunda:outputParameter>
+              </camunda:inputOutput>
+            </extensionElements>
+          </task>
+        </process>
+      </definitions>`;
+
+      flow = await testHelpers.getOnifyFlow(source);
+    });
+
+    let end;
+    When('executed', () => {
+      end = flow.waitFor('end');
+      flow.run();
+    });
+
+    Then('run completes', () => {
+      return end;
+    });
+
+    And('output is set', () => {
+      expect(flow.environment.output).to.have.property('url', 'https://example.com');
+    });
+
+    When('running flow with built-in bpmn-engine scripts', async () => {
+      flow = await testHelpers.getOnifyFlow(source, { scripts: new JavaScripts(true) });
+    });
+
+    When('executed', () => {
+      end = flow.waitFor('end');
+      flow.run();
+    });
+
+    Then('run completes', () => {
+      return end;
+    });
+
+    And('output is set', () => {
+      expect(flow.environment.output).to.have.property('url', 'https://example.com');
+    });
+  });
+
   Scenario('Onify script context', () => {
     let flow;
     Given('a flow with a script task with execution error', async () => {

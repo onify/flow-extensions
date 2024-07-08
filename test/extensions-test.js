@@ -65,25 +65,25 @@ describe('extensions', () => {
 
       it('extendFn registers io scripts with type', async () => {
         const source = `
-      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
-        targetNamespace="http://bpmn.io/schema/bpmn">
-        <process id="process-1" name="Onify Flow" isExecutable="true">
-          <task id="service">
-            <extensionElements>
-              <camunda:inputOutput>
-                <camunda:inputParameter name="method">
-                  <camunda:script scriptFormat="js">next(null, 'GET');</camunda:script>
-                </camunda:inputParameter>
-                <camunda:inputParameter name="url">/my/items/workspace-1</camunda:inputParameter>
-                <camunda:outputParameter name="result">
-                  <camunda:script scriptFormat="js">next(null, { id: content.id, statuscode });</camunda:script>
-                </camunda:outputParameter>
-              </camunda:inputOutput>
-            </extensionElements>
-          </task>
-        </process>
-      </definitions>`;
+        <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+          xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+          targetNamespace="http://bpmn.io/schema/bpmn">
+          <process id="process-1" name="Onify Flow" isExecutable="true">
+            <task id="service">
+              <extensionElements>
+                <camunda:inputOutput>
+                  <camunda:inputParameter name="method">
+                    <camunda:script scriptFormat="js">next(null, 'GET');</camunda:script>
+                  </camunda:inputParameter>
+                  <camunda:inputParameter name="url">/my/items/workspace-1</camunda:inputParameter>
+                  <camunda:outputParameter name="result">
+                    <camunda:script scriptFormat="js">next(null, { id: content.id, statuscode });</camunda:script>
+                  </camunda:outputParameter>
+                </camunda:inputOutput>
+              </extensionElements>
+            </task>
+          </process>
+        </definitions>`;
         const moddleContext = await testHelpers.moddleContext(source, moddleExtensions);
         const serialized = Serializer(moddleContext, TypeResolver(Elements), flowExtensions.extendFn);
 

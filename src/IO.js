@@ -152,6 +152,7 @@ export class InputOutput {
           context.environment.scripts.register({
             id,
             type: parm.$type,
+            environment: context.environment,
             behaviour: {
               scriptFormat,
               ...(value && { script: value }),

@@ -70,6 +70,7 @@ class ScriptListener extends Listener {
     context.environment.scripts.register({
       id,
       type: this.type,
+      environment: this.environment,
       behaviour: {
         scriptFormat,
         ...(value && {
