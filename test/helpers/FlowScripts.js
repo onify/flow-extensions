@@ -1,11 +1,11 @@
-import { join } from 'path';
-import { promises as fs } from 'fs';
-import { Script } from 'vm';
+import { join } from 'node:path';
+import { promises as fs } from 'node:fs';
+import { Script } from 'node:vm';
 
 const kSyntaxError = Symbol.for('syntax error');
 const kResources = Symbol.for('resources base');
 
-class FlowScriptError extends Error {
+export class FlowScriptError extends Error {
   constructor(fromErr) {
     super(fromErr.message);
     this.name = this.constructor.name;
@@ -23,11 +23,11 @@ class FlowScriptError extends Error {
     });
   }
   toString() {
-    return '[FlowScriptError] ' + this.message + '\n' + this.stack;
+    return '[' + this.name + '] ' + this.message + '\n' + this.stack;
   }
 }
 
-class FlowSyntaxError extends Error {
+export class FlowSyntaxError extends Error {
   constructor(fromErr) {
     super(fromErr.message);
     this.name = this.constructor.name;
@@ -45,17 +45,23 @@ class FlowSyntaxError extends Error {
     });
   }
   toString() {
-    return '[FlowSyntaxError] ' + this.message + '\n' + this.stack;
+    return '[' + this.name + '] ' + this.message + '\n' + this.stack;
   }
 }
 
-export { FlowScripts, JavaScript, JavaScriptResource };
+export class FlowResourceError extends FlowScriptError {
+  constructor(fromErr, filename) {
+    super(fromErr);
+    this.filename = filename;
+    this.inner = fromErr;
+  }
+}
 
-function FlowScripts(flowName, resourceBase, runContext, timeout = 60000) {
-  this._name = flowName;
-  this._scripts = {};
-  this._timeout = timeout;
-  this._runContext = runContext;
+export function FlowScripts(flowName, resourceBase, runContext, timeout = 60000) {
+  this.flowName = flowName;
+  this.scripts = new Map();
+  this.timeout = timeout;
+  this.runContext = runContext;
   this[kResources] = resourceBase;
 }
 
@@ -83,22 +89,33 @@ FlowScripts.prototype.register = function register({ id, type, behaviour }) {
 
   language = 'javascript';
 
-  const name = this._name;
-  const filename = `${name}/${type}/${id}`;
+  const flowName = this.flowName;
+  const filename = `${flowName}/${type}/${id}`;
   if (scriptBody) {
-    this._scripts[id] = new JavaScript(name, scriptBody, this._runContext, { filename, timeout: this._timeout });
+    this.scripts.set(id, new JavaScript(flowName, scriptBody, this.runContext, { filename, timeout: this.timeout }));
   } else if (resource) {
-    this._scripts[id] = new JavaScriptResource(name, resource, this[kResources], this._runContext, { filename, timeout: this._timeout });
+    this.scripts.set(
+      id,
+      new JavaScriptResource(flowName, resource, this[kResources], this.runContext, { filename, timeout: this.timeout }),
+    );
   }
 };
 
 FlowScripts.prototype.getScript = function getScript(scriptType, { id }) {
-  return this._scripts[id];
+  return this.scripts.get(id);
 };
 
-function JavaScript(flowName, scriptBody, runContext, options) {
+/**
+ * Java script
+ * @param {string} flowName
+ * @param {string|Buffer} scriptBody
+ * @param {any} [runContext]
+ * @param {import('node:vm').ScriptOptions} options
+ */
+export function JavaScript(flowName, scriptBody, runContext, options) {
   this.flowName = flowName;
-  this._runContext = runContext;
+  this.options = options;
+  this.runContext = runContext;
   this.timeout = options?.timeout;
 
   try {
@@ -124,7 +141,7 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
           from: Buffer.from,
         },
         contextName: this.flowName,
-        ...this._runContext,
+        ...this.runContext,
         next,
       },
       {
@@ -143,28 +160,43 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
   }
 };
 
-function JavaScriptResource(flowName, resource, resourceBase, runContext, options) {
+export function JavaScriptResource(flowName, resource, resourceBase, runContext, options) {
   this.flowName = flowName;
   this.resource = resource;
+  this.runContext = runContext;
   this.options = options;
-  this._runContext = runContext;
-  this[kResources] = resourceBase;
+  this.timeout = options?.timeout;
+  this.resourceBase = resourceBase;
 }
+
+/**
+ * Get javascript resource content
+ * @param {string} resourceBase Resource base
+ * @param {*} resource Resource name or path
+ * @returns {Promise<string|Buffer} Resource content
+ */
+JavaScriptResource.prototype.getResourceContent = function getResourceContent(resourceBase, resource) {
+  return fs.readFile(join(resourceBase, resource));
+};
 
 JavaScriptResource.prototype.execute = async function execute(executionContext, callback) {
   let resource;
   try {
     resource = executionContext.resolveExpression(this.resource);
-    var scriptBody = await fs.readFile(join(this[kResources], resource)); // eslint-disable-line no-var
+    var scriptBody = await this.getResourceContent(this.resourceBase, resource); // eslint-disable-line no-var
+    if (!scriptBody) throw new TypeError(`${this.options.filename}: script resource ${resource || this.resource} is empty`);
   } catch (err) {
     if (err instanceof SyntaxError) {
       return callback(err);
     }
-    const { filename } = this.options;
-    return callback(new Error(`${filename}: script resource ${resource || this.resource} not found`));
+    return callback(new FlowResourceError(err, this.options.filename));
   }
 
-  const script = new JavaScript(this.flowName, scriptBody, this._runContext, {
+  if (!scriptBody) {
+    throw new FlowResourceError();
+  }
+
+  const script = new JavaScript(this.flowName, scriptBody, this.runContext, {
     ...this.options,
     filename: `${this.options.filename}/${resource}`,
   });

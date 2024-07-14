@@ -1,12 +1,13 @@
-import { Serializer, TypeResolver } from 'moddle-context-serializer';
-import { Engine } from 'bpmn-engine';
-import { extensions, extendFn } from '../../src/index.js';
-import { FlowScripts } from './FlowScripts.js';
-import { promises as fs } from 'fs';
-import * as Elements from 'bpmn-elements';
-import * as expressions from '@aircall/expression-parser';
+import fs from 'node:fs/promises';
 import BpmnModdle from 'bpmn-moddle';
 import Debug from 'debug';
+import { Engine } from 'bpmn-engine';
+import { Serializer, TypeResolver } from 'moddle-context-serializer';
+import * as Elements from 'bpmn-elements';
+import * as expressions from '@aircall/expression-parser';
+
+import { FlowScripts } from './FlowScripts.js';
+import { extensions, extendFn } from '../../src/index.js';
 import { OnifyTimerEventDefinition as TimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
 
 let exts;

@@ -389,7 +389,8 @@ Feature('Flow scripts', () => {
 
     Then('an Error is thrown indicating input script failed', async () => {
       const err = await error;
-      expect(err.content.error.message).to.equal('command-definition/bpmn:ScriptTask/task: script resource ./io-sripts.js not found');
+      expect(err.content.error.message).to.match(/ENOENT/i);
+      expect(err.content.error.code).to.equal('EFLOW_SCRIPT');
     });
   });
 
