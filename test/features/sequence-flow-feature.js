@@ -124,7 +124,7 @@ Feature('Sequence flow', () => {
               </camunda:properties>
             </extensionElements>
           </sequenceFlow>
-          <sequenceFlow id="to-end-default" sourceRef="start" targetRef="end">
+          <sequenceFlow id="to-end-default" sourceRef="start" targetRef="end-default">
             <extensionElements>
               <camunda:properties>
                 <camunda:property name="from" value="\${content.id}" />
@@ -132,6 +132,7 @@ Feature('Sequence flow', () => {
             </extensionElements>
           </sequenceFlow>
           <endEvent id="end" />
+          <endEvent id="end-default" />
         </process>
        </definitions>`;
 
@@ -170,7 +171,7 @@ Feature('Sequence flow', () => {
     });
 
     And('taken sequence flow was taken with properties', () => {
-      const message = messages.find((msg) => msg.content.id === 'end' && msg.fields.routingKey === 'activity.enter');
+      const message = messages.find((msg) => msg.content.id === 'end-default' && msg.fields.routingKey === 'activity.enter');
       expect(message.content.inbound[0].properties).to.deep.equal({ from: 'start' });
     });
 
@@ -217,7 +218,7 @@ Feature('Sequence flow', () => {
     });
 
     And('discarded flow was discarded without properties', () => {
-      const message = messages.find((msg) => msg.content.id === 'end' && msg.fields.routingKey === 'activity.discard');
+      const message = messages.find((msg) => msg.content.id === 'end-default' && msg.fields.routingKey === 'activity.discard');
       expect(message.content.inbound[0].properties).to.not.be.ok;
     });
 

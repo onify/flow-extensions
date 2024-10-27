@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 8.3.1
+
+- move `@0dep/piso` to peer dependency
+
 # 8.3.0
 
 - fix `FlowScripts` type declaration
