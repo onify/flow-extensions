@@ -106,10 +106,16 @@ describe('OnifyTimerEventDefinition', () => {
     });
 
     it('throws if invalid time cycle', () => {
-      ck.freeze(Date.UTC(2023, 4, 27));
       expect(() => {
         def.parse('timeCycle', 'yesterday');
-      }).to.throw(/Validation error/i);
+      }).to.throw(/timeCycle/i);
+    });
+
+    it('throws if invalid time cycle and caps interval to 255 chars in error message', () => {
+      const invalidInterval = new Array(256).fill('a').join('');
+      expect(() => {
+        def.parse('timeCycle', invalidInterval);
+      }).to.throw(new RegExp(`<${invalidInterval.substring(0, 255)}>`));
     });
   });
 });

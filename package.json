@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "8.3.1",
+  "version": "9.0.0",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -50,7 +50,6 @@
     "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.9",
     "@babel/register": "^7.23.7",
-    "bpmn-elements": "^16.2.0",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
     "bpmn-engine": "^23.0.1",
     "bpmn-engine-14": "npm:bpmn-engine@14",
@@ -70,10 +69,8 @@
   },
   "peerDependencies": {
     "@0dep/piso": ">=2",
-    "bpmn-elements": ">=14"
-  },
-  "dependencies": {
-    "cron-parser": "^4.9.0"
+    "bpmn-elements": ">=14",
+    "croner": ">=9.0.0"
   },
   "files": [
     "src",

@@ -585,7 +585,7 @@ Feature('Flow timers', () => {
     Then('an error is thrown', async () => {
       const err = (await error).content.error;
       expect(err).to.be.instanceof(RunError);
-      expect(err.message).to.match(/constraint/i);
+      expect(err.message).to.match(/timeCycle/i);
       expect(err.inner).to.be.instanceof(Error);
     });
 
@@ -616,7 +616,7 @@ Feature('Flow timers', () => {
       const err = (await error).content.error;
       expect(err).to.be.instanceof(RunError);
       expect(err.inner).to.be.instanceof(RangeError);
-      expect(err.inner.message).to.match(/^ISO 8601 duration fractions/i);
+      expect(err.inner.message).to.match(/timeCycle/i);
     });
 
     Given('a flow with invalid date', async () => {
@@ -646,7 +646,7 @@ Feature('Flow timers', () => {
       const err = (await error).content.error;
       expect(err).to.be.instanceof(RunError);
       expect(err.inner).to.be.instanceof(RangeError);
-      expect(err.inner.message).to.match(/^Invalid ISO 8601 date/i);
+      expect(err.inner.message).to.match(/timeCycle/i);
     });
   });
 

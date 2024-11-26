@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 9.0.0
+
+- replace cron parser `cron-parser` with `croner` as peer dependency
+
 # 8.3.1
 
 - move `@0dep/piso` to peer dependency

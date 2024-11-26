@@ -1,7 +1,5 @@
-import cronParser from 'cron-parser';
+import { Cron } from 'croner';
 import { TimerEventDefinition } from 'bpmn-elements';
-
-const invalidCronEntryPattern = /Invalid (characters|range)/i;
 
 export class OnifyTimerEventDefinition extends TimerEventDefinition {
   constructor(activity, def) {
@@ -19,15 +17,17 @@ export class OnifyTimerEventDefinition extends TimerEventDefinition {
       }
 
       try {
-        const expireAt = cronParser.parseExpression(value).next().toDate();
+        const expireAt = new Cron(value).nextRun();
 
         return {
           expireAt,
           delay: expireAt - Date.now(),
         };
       } catch (err) {
-        if (invalidCronEntryPattern.test(err.message)) throw rangeError;
-        throw err;
+        this.logger.error(`<${this.activity?.id}> failed to parse timeCycle: ${rangeError.message}`);
+        this.logger.error(`<${this.activity?.id}> failed to parse timeCycle as cron: ${err.message}`);
+
+        throw new RangeError(`Failed to parse timeCycle <${value?.substring(0, 255)}> as ISO 8601 interval or cron`);
       }
     }
 
