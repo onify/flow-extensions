@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -65,7 +65,7 @@
     "moddle-context-serializer": "^4.1.1",
     "nock": "^14.0.1",
     "prettier": "^3.2.4",
-    "texample": "^0.0.7"
+    "texample": "^0.0.8"
   },
   "peerDependencies": {
     "@0dep/piso": ">=2",

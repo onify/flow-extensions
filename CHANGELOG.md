@@ -2,6 +2,10 @@
 
 # unreleased
 
+# 9.1.0
+
+- add support for ad-hoc subprocess extensions
+
 # 9.0.0
 
 - replace cron parser `cron-parser` with `croner` as peer dependency

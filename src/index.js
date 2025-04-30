@@ -10,6 +10,7 @@ export function extensions(element, context) {
   switch (element.type) {
     case 'bpmn:Process':
       return new OnifyProcessExtensions(element, context);
+    case 'bpmn:AdHocSubProcess':
     case 'bpmn:SubProcess':
     case 'bpmn:Transaction':
       return new OnifySubProcessExtensions(element, context);
