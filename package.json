@@ -51,7 +51,7 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/register": "^7.23.7",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
-    "bpmn-engine": "^23.0.1",
+    "bpmn-engine": "^25.0.0",
     "bpmn-engine-14": "npm:bpmn-engine@14",
     "bpmn-moddle": "^9.0.1",
     "c8": "^10.1.2",
