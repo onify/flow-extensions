@@ -57,7 +57,7 @@
     "c8": "^10.1.2",
     "camunda-bpmn-moddle": "^7.0.1",
     "chai": "^5.0.3",
-    "chronokinesis": "^6.0.0",
+    "chronokinesis": "^7.0.0",
     "debug": "^4.3.4",
     "eslint": "^9.3.0",
     "mocha": "^11.0.1",
