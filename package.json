@@ -1,6 +1,6 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "9.1.0",
+  "version": "9.1.1",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
@@ -56,16 +56,15 @@
     "bpmn-moddle": "^9.0.1",
     "c8": "^10.1.2",
     "camunda-bpmn-moddle": "^7.0.1",
-    "chai": "^5.0.3",
+    "chai": "^6.2.1",
     "chronokinesis": "^7.0.0",
     "debug": "^4.3.4",
     "eslint": "^9.3.0",
     "mocha": "^11.0.1",
     "mocha-cakes-2": "^3.3.0",
     "moddle-context-serializer": "^4.1.1",
-    "nock": "^14.0.1",
     "prettier": "^3.2.4",
-    "texample": "^0.0.8"
+    "texample": "^0.1.0"
   },
   "peerDependencies": {
     "@0dep/piso": ">=2",

@@ -25,11 +25,11 @@ export class OnifyProcessExtensions {
               ...elementApi.content,
               error: new FormatError(bp.id, err),
             },
-            { mandatory: true, type: 'error' },
+            { mandatory: true, type: 'error' }
           );
         }
       },
-      { consumerTag: '_onify-extension-on-enter' },
+      { consumerTag: '_onify-extension-on-enter' }
     );
   }
   _onEnter(elementApi) {

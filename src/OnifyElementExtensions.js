@@ -27,7 +27,7 @@ export class OnifyElementExtensions {
       (elementApi) => {
         return this._onExecutionCompleted(elementApi);
       },
-      { consumerTag: '_onify-extension-on-executed' },
+      { consumerTag: '_onify-extension-on-executed' }
     );
 
     if (executionListeners?.onStart) {
@@ -36,7 +36,7 @@ export class OnifyElementExtensions {
         (elementApi) => {
           this._executeExecutionListener('start', elementApi);
         },
-        { consumerTag: '_onify-extension-on-listenerstart' },
+        { consumerTag: '_onify-extension-on-listenerstart' }
       );
     }
 
@@ -46,7 +46,7 @@ export class OnifyElementExtensions {
         (elementApi) => {
           this._executeExecutionListener('end', elementApi);
         },
-        { consumerTag: '_onify-extension-on-listenerend' },
+        { consumerTag: '_onify-extension-on-listenerend' }
       );
     }
   }

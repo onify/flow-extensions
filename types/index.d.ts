@@ -1,5 +1,5 @@
 declare module '@onify/flow-extensions' {
-  import { SequenceFlow, TimerEventDefinition, ElementBase, IExtension, ContextInstance, SequenceFlow } from 'bpmn-elements';
+  import { SequenceFlow, TimerEventDefinition, ElementBase, IExtension, ContextInstance } from 'bpmn-elements';
   import { extendFn as extendFunction } from 'moddle-context-serializer';
 
   export class OnifySequenceFlow extends SequenceFlow {}
@@ -15,7 +15,7 @@ declare module '@onify/flow-extensions/FlowScripts' {
   import { SerializableElement } from 'moddle-context-serializer';
   import { ScriptOptions } from 'node:vm';
 
-  declare type registerArgument = SerializableElement | { id: string; type: string; behavior: any };
+  type registerArgument = SerializableElement | { id: string; type: string; behavior: any };
 
   export interface FlowScriptOptions extends ScriptOptions {
     timeout?: number;

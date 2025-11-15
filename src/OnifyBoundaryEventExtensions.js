@@ -21,7 +21,7 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
       (elementApi) => {
         return this._onExecutionCompleted(elementApi, formatQ);
       },
-      { consumerTag: '_onify-extension-on-executed' },
+      { consumerTag: '_onify-extension-on-executed' }
     );
 
     if (executionListeners?.onStart) {
@@ -34,7 +34,7 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
             return activity.logger.error(`<${activity.id}> execution listener error`, err);
           }
         },
-        { consumerTag: '_onify-extension-on-listenerstart' },
+        { consumerTag: '_onify-extension-on-listenerstart' }
       );
     }
     if (executionListeners?.onEnd) {
@@ -43,7 +43,7 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
         (elementApi) => {
           this._executeExecutionListener('end', elementApi, formatQ);
         },
-        { consumerTag: '_onify-extension-on-listenerend' },
+        { consumerTag: '_onify-extension-on-listenerend' }
       );
     }
   }

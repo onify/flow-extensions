@@ -16,7 +16,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
         (elementApi) => {
           return this._asyncFormatOnEnter(elementApi);
         },
-        '_onify-extension-on-enter',
+        '_onify-extension-on-enter'
       );
     } else {
       this._setupListener(
@@ -25,7 +25,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
         (elementApi) => {
           return this._asyncFormatOnEnter(elementApi);
         },
-        '_onify-extension-on-enter',
+        '_onify-extension-on-enter'
       );
     }
 
@@ -35,7 +35,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
       (elementApi) => {
         return this._onExecutionCompleted(elementApi);
       },
-      '_onify-extension-on-executed',
+      '_onify-extension-on-executed'
     );
 
     if (executionListeners?.onStart) {
@@ -45,7 +45,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
         (elementApi) => {
           this._executeExecutionListener('start', elementApi);
         },
-        '_onify-extension-on-listenerstart',
+        '_onify-extension-on-listenerstart'
       );
     }
 
@@ -56,7 +56,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
         (elementApi) => {
           this._executeExecutionListener('end', elementApi);
         },
-        '_onify-extension-on-listenerend',
+        '_onify-extension-on-listenerend'
       );
     }
   }
@@ -70,7 +70,7 @@ export class OnifySubProcessExtensions extends OnifyElementExtensions {
 
         return callback(activity.getApi(message));
       },
-      { noAck: true, consumerTag },
+      { noAck: true, consumerTag }
     );
   }
 }

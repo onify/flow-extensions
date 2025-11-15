@@ -16,7 +16,7 @@ export class OnifySequenceFlow extends SequenceFlow {
       (_, msg) => {
         this._executeListeners(msg);
       },
-      { noAck: true, consumerTag: '_onify-execution-listener' },
+      { noAck: true, consumerTag: '_onify-execution-listener' }
     );
   }
   async _executeListeners(message) {

@@ -21,7 +21,7 @@ describe('OnifyTimerEventDefinition', () => {
       },
       {
         type: 'bpmn:TimerEventDefinition',
-      },
+      }
     );
   });
   afterEach(ck.reset);

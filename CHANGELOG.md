@@ -2,6 +2,10 @@
 
 # unreleased
 
+# v9.1.1 - 2025-11-15
+
+- provenance release
+
 # 9.1.0
 
 - add support for ad-hoc subprocess extensions

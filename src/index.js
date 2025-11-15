@@ -27,7 +27,7 @@ export function extendFn(behaviour, context) {
       if (!behaviour.eventDefinitions) break;
 
       const timer = behaviour.eventDefinitions.find(
-        ({ type, behaviour: edBehaviour }) => edBehaviour && type === 'bpmn:TimerEventDefinition',
+        ({ type, behaviour: edBehaviour }) => edBehaviour && type === 'bpmn:TimerEventDefinition'
       );
       if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, { scheduledStart: timer.behaviour.timeCycle });
 

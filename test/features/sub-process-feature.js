@@ -238,7 +238,7 @@ Feature('Sub process', () => {
           if (msg.content.id === 'subtask') subtaskCount++;
           if (msg.content.id === 'subsubtask') subsubtaskCount++;
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       flow.broker.subscribeTmp(
@@ -247,7 +247,7 @@ Feature('Sub process', () => {
         (_, msg) => {
           formatEnd.push(msg.content.id);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       wait = flow.waitFor('wait');
@@ -350,6 +350,6 @@ function forwardFormatting(activity) {
     (routingKey, msg) => {
       broker.publish('event', 'format.' + routingKey, { id: activity.id, ...msg.content });
     },
-    { noAck: true },
+    { noAck: true }
   );
 }

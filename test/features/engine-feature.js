@@ -1,7 +1,7 @@
 import * as ck from 'chronokinesis';
 import factory from '../helpers/factory.js';
 import testHelpers from '../helpers/testHelpers.js';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 Feature('BPMN Engine', () => {
   let blueprintSource;
@@ -11,6 +11,7 @@ Feature('BPMN Engine', () => {
   after(ck.reset);
 
   Scenario('Onify API request', () => {
+    /** @type {import('bpmn-engine').BpmnEngine} */
     let engine;
     const apiCalls = [];
     Given('a source with agent task Onify API requests', async () => {

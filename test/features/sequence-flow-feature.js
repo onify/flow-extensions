@@ -38,7 +38,7 @@ Feature('Sequence flow', () => {
         (_, message) => {
           leaveMessages.push(message);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = engine.waitFor('end');
@@ -83,7 +83,7 @@ Feature('Sequence flow', () => {
         (_, message) => {
           leaveMessages.push(message);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = engine.waitFor('end');
@@ -151,7 +151,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
       flow.broker.subscribeTmp(
         'event',
@@ -159,7 +159,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = flow.waitFor('end');
@@ -188,7 +188,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
       flow.broker.subscribeTmp(
         'event',
@@ -196,7 +196,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = flow.waitFor('end');
@@ -490,7 +490,7 @@ Feature('Sequence flow', () => {
           () => {
             if (calls.length === 2) resolve(calls);
           },
-          { noAck: true },
+          { noAck: true }
         );
       });
 
@@ -551,7 +551,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = flow.waitFor('end');
@@ -618,7 +618,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = flow.waitFor('end');
@@ -689,7 +689,7 @@ Feature('Sequence flow', () => {
         (_, msg) => {
           messages.push(msg);
         },
-        { noAck: true },
+        { noAck: true }
       );
 
       end = flow.waitFor('end');

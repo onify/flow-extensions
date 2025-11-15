@@ -96,7 +96,7 @@ FlowScripts.prototype.register = function register({ id, type, behaviour }) {
   } else if (resource) {
     this.scripts.set(
       id,
-      new JavaScriptResource(flowName, resource, this[kResources], this.runContext, { filename, timeout: this.timeout }),
+      new JavaScriptResource(flowName, resource, this[kResources], this.runContext, { filename, timeout: this.timeout })
     );
   }
 };
@@ -146,7 +146,7 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
       },
       {
         timeout: this.timeout,
-      },
+      }
     );
   } catch (err) {
     return next(new FlowScriptError(err));
