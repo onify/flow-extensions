@@ -34,6 +34,9 @@ config/_revision
 # eslint
 .eslintcache
 
+# CLAUDE.md symlink -> AGENTS.md
+CLAUDE.md
+
 *.log
 
 package-lock.json

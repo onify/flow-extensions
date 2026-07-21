@@ -27,7 +27,7 @@ export class OnifyTimerEventDefinition extends TimerEventDefinition {
         this.logger.error(`<${this.activity?.id}> failed to parse timeCycle: ${rangeError.message}`);
         this.logger.error(`<${this.activity?.id}> failed to parse timeCycle as cron: ${err.message}`);
 
-        throw new RangeError(`Failed to parse timeCycle <${value?.substring(0, 255)}> as ISO 8601 interval or cron`);
+        throw new RangeError(`Failed to parse timeCycle <${value?.substring(0, 255)}> as ISO 8601 interval or cron`, { cause: err });
       }
     }
 

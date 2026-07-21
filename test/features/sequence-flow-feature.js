@@ -175,9 +175,9 @@ Feature('Sequence flow', () => {
       expect(message.content.inbound[0].properties).to.deep.equal({ from: 'start' });
     });
 
-    And('discarded flow was discarded without properties', () => {
-      const message = messages.find((msg) => msg.content.id === 'end' && msg.fields.routingKey === 'activity.discard');
-      expect(message.content.inbound[0].properties).to.not.be.ok;
+    And('not taken flow was not discarded and its target was never reached', () => {
+      const message = messages.find((msg) => msg.content.id === 'end');
+      expect(message, 'no message for end').to.be.undefined;
     });
 
     When('ran again with options to take conditional flow', async () => {
@@ -217,9 +217,9 @@ Feature('Sequence flow', () => {
       expect(message.content.inbound[0]).to.have.property('bar', 'baz');
     });
 
-    And('discarded flow was discarded without properties', () => {
-      const message = messages.find((msg) => msg.content.id === 'end-default' && msg.fields.routingKey === 'activity.discard');
-      expect(message.content.inbound[0].properties).to.not.be.ok;
+    And('not taken flow was not discarded and its target was never reached', () => {
+      const message = messages.find((msg) => msg.content.id === 'end-default');
+      expect(message, 'no message for end-default').to.be.undefined;
     });
 
     Given('flow with condition that address properties', async () => {

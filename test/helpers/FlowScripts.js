@@ -87,8 +87,6 @@ FlowScripts.prototype.register = function register({ id, type, behaviour }) {
 
   if (!['js', 'javascript'].includes(language.toLowerCase().trim())) return;
 
-  language = 'javascript';
-
   const flowName = this.flowName;
   const filename = `${flowName}/${type}/${id}`;
   if (scriptBody) {

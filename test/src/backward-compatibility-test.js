@@ -1,6 +1,8 @@
 import { Engine } from 'bpmn-engine';
 import { Engine as Engine14 } from 'bpmn-engine-14';
+import { Engine as Engine25 } from 'bpmn-engine-25';
 import * as Elements81 from 'bpmn-elements-8-1';
+import * as Elements17 from 'bpmn-elements-17';
 import testHelpers from '../helpers/testHelpers.js';
 
 const source = `<?xml version="1.0" encoding="UTF-8"?>
@@ -45,12 +47,11 @@ const source = `<?xml version="1.0" encoding="UTF-8"?>
 </definitions>`;
 
 describe('backward compatibility', () => {
-  it('resume state from bpmn-engine@14', async () => {
+  it('resume state from bpmn-engine@14 to bpmn-engine@25', async () => {
     const httpRequests = new HttpRequests();
 
     const extensions = testHelpers.getModdleExtensions();
     const engine14 = new Engine14({
-      name: 'engine-14',
       elements: Elements81,
       source,
       moddleOptions: await testHelpers.getModdleExtensions(),
@@ -81,8 +82,75 @@ describe('backward compatibility', () => {
     const state = await engine14.getState();
     await engine14.stop();
 
+    const engine = new Engine25({
+      extensions: { onify: extensions },
+      ...testHelpers.getFlowOptions('engine-25', {
+        services: {
+          httpRequest(...args) {
+            httpRequests.push(args);
+          },
+        },
+      }),
+    });
+
+    const pendingCall = httpRequests.waitFor();
+
+    const timer = new Promise((resolve) => engine.broker.subscribeOnce('event', 'activity.timer', (_, msg) => resolve(msg)));
+    await engine.recover(state).resume();
+    await timer;
+
+    expect(engine.environment.timers.executing).to.have.length(1);
+
+    engine.environment.timers.executing[0].callback();
+
+    const callArgs = await pendingCall;
+    expect(callArgs[0]).to.deep.equal({
+      throwHttpErrors: false,
+      responseType: 'json',
+      method: 'GET',
+      url: 'https://service.now/status',
+    });
+
+    await engine.stop();
+  });
+
+  it('resume state from bpmn-engine@25 to latest', async () => {
+    const httpRequests = new HttpRequests();
+
+    const extensions = testHelpers.getModdleExtensions();
+    const engine25 = new Engine25({
+      name: 'engine-25',
+      elements: Elements17,
+      source,
+      moddleOptions: await testHelpers.getModdleExtensions(),
+      extensions: { onify: extensions },
+      ...testHelpers.getFlowOptions('engine-25', {
+        services: {
+          httpRequest(...args) {
+            httpRequests.push(args);
+          },
+        },
+      }),
+    });
+
+    const pendingCall25 = httpRequests.waitFor();
+
+    const timer25 = new Promise((resolve) => engine25.broker.subscribeOnce('event', 'activity.timer', (_, msg) => resolve(msg)));
+    engine25.execute();
+
+    const call14 = await pendingCall25;
+    call14.pop()(null, {
+      body: {
+        ticketStatus: 0,
+      },
+    });
+
+    await timer25;
+
+    const state = await engine25.getState();
+    await engine25.stop();
+
     const engine = new Engine({
-      name: 'engine-last',
       extensions: { onify: extensions },
       ...testHelpers.getFlowOptions('engine-last', {
         services: {

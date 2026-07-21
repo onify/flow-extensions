@@ -178,7 +178,7 @@ Feature('BPMN Engine', () => {
 
     let end;
     When('service call completes', () => {
-      engine.waitFor('end');
+      end = engine.waitFor('end');
       serviceCalls.pop().pop()();
     });
 
