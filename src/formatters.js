@@ -1,4 +1,7 @@
 export class FormatActivity {
+  /**
+   * @param {import('bpmn-elements').Activity} activity
+   */
   constructor(activity) {
     this.activity = activity;
     this.resultVariable = activity.behaviour.resultVariable;
@@ -13,7 +16,20 @@ export class FormatActivity {
       }
     }
     this.timeCycles = timeCycles;
+
+    const { documentation, candidateUsers, candidateGroups, scheduledStart, assignee } = activity.behaviour;
+    this.hasFormatting = Boolean(
+      this.resultVariable ||
+      candidateUsers ||
+      candidateGroups ||
+      assignee ||
+      documentation?.[0]?.text ||
+      (scheduledStart && activity.parent?.type === 'bpmn:Process')
+    );
   }
+  /**
+   * @param {import('bpmn-elements').IApi<import('bpmn-elements').Activity>} elementApi
+   */
   resolve(elementApi) {
     let user, groups, assigneeValue, description;
     const activity = this.activity;
@@ -36,6 +52,9 @@ export class FormatActivity {
 }
 
 export class FormatProcess {
+  /**
+   * @param {import('bpmn-elements').Process} bp
+   */
   constructor(bp) {
     this.process = bp;
     this._historyTTL = undefined;
@@ -43,6 +62,9 @@ export class FormatProcess {
       this._historyTTL = bp.context.definitionContext.getTimersByElementId(bp.id).find((t) => t.timer.type === 'historyTimeToLive');
     }
   }
+  /**
+   * @param {import('bpmn-elements').IApi<import('bpmn-elements').Process>} elementApi
+   */
   resolve(elementApi) {
     let user, groups, description;
     const bp = this.process;
@@ -61,6 +83,11 @@ export class FormatProcess {
   }
 }
 
+/**
+ * @param {import('bpmn-elements').IApi<import('bpmn-elements').Activity>} elementApi
+ * @param {string} str
+ * @returns {string[] | undefined}
+ */
 function resolveAndSplit(elementApi, str) {
   if (Array.isArray(str)) return str.filter(Boolean);
   if (typeof str !== 'string') return;

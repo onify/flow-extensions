@@ -6,6 +6,7 @@ const kSyntaxError = Symbol.for('syntax error');
 const kResources = Symbol.for('resources base');
 
 export class FlowScriptError extends Error {
+  /** @param {Error} fromErr */
   constructor(fromErr) {
     super(fromErr.message);
     this.name = this.constructor.name;
@@ -28,6 +29,7 @@ export class FlowScriptError extends Error {
 }
 
 export class FlowSyntaxError extends Error {
+  /** @param {Error} fromErr */
   constructor(fromErr) {
     super(fromErr.message);
     this.name = this.constructor.name;
@@ -50,6 +52,10 @@ export class FlowSyntaxError extends Error {
 }
 
 export class FlowResourceError extends FlowScriptError {
+  /**
+   * @param {Error} fromErr
+   * @param {string} [filename]
+   */
   constructor(fromErr, filename) {
     super(fromErr);
     this.filename = filename;
@@ -57,14 +63,26 @@ export class FlowResourceError extends FlowScriptError {
   }
 }
 
+/**
+ * Flow scripts provider
+ * @param {string} flowName Flow name
+ * @param {string} resourceBase External resource base
+ * @param {any} [runContext] Optional script globals
+ * @param {number} [timeout] Optional execution timeout in milliseconds, default 60000
+ */
 export function FlowScripts(flowName, resourceBase, runContext, timeout = 60000) {
   this.flowName = flowName;
+  /** @type {Map<string, JavaScript | JavaScriptResource>} */
   this.scripts = new Map();
   this.timeout = timeout;
   this.runContext = runContext;
   this[kResources] = resourceBase;
 }
 
+/**
+ * Register script element
+ * @param {import('moddle-context-serializer').SerializableElement} element
+ */
 FlowScripts.prototype.register = function register({ id, type, behaviour }) {
   let language, scriptBody, resource;
 
@@ -99,6 +117,11 @@ FlowScripts.prototype.register = function register({ id, type, behaviour }) {
   }
 };
 
+/**
+ * Get registered script
+ * @param {string} scriptType
+ * @param {{ id: string }} identifier
+ */
 FlowScripts.prototype.getScript = function getScript(scriptType, { id }) {
   return this.scripts.get(id);
 };
@@ -108,7 +131,7 @@ FlowScripts.prototype.getScript = function getScript(scriptType, { id }) {
  * @param {string} flowName
  * @param {string|Buffer} scriptBody
  * @param {any} [runContext]
- * @param {import('node:vm').ScriptOptions} options
+ * @param {import('node:vm').ScriptOptions & { filename?: string, timeout?: number }} [options]
  */
 export function JavaScript(flowName, scriptBody, runContext, options) {
   this.flowName = flowName;
@@ -123,6 +146,11 @@ export function JavaScript(flowName, scriptBody, runContext, options) {
   }
 }
 
+/**
+ * Execute script
+ * @param {import('bpmn-elements').ExecutionScope} executionContext
+ * @param {CallableFunction} callback
+ */
 JavaScript.prototype.execute = async function execute(executionContext, callback) {
   let callbackCalled;
   const syntaxError = this[kSyntaxError];
@@ -158,6 +186,14 @@ JavaScript.prototype.execute = async function execute(executionContext, callback
   }
 };
 
+/**
+ * Java script resource
+ * @param {string} flowName
+ * @param {string} resource Resource name or path
+ * @param {string} resourceBase Resource base
+ * @param {any} [runContext]
+ * @param {import('node:vm').ScriptOptions & { filename?: string, timeout?: number }} [options]
+ */
 export function JavaScriptResource(flowName, resource, resourceBase, runContext, options) {
   this.flowName = flowName;
   this.resource = resource;
@@ -170,13 +206,18 @@ export function JavaScriptResource(flowName, resource, resourceBase, runContext,
 /**
  * Get javascript resource content
  * @param {string} resourceBase Resource base
- * @param {*} resource Resource name or path
- * @returns {Promise<string|Buffer} Resource content
+ * @param {string} resource Resolved resource name or path
+ * @returns {Promise<string|Buffer>} Resource content
  */
 JavaScriptResource.prototype.getResourceContent = function getResourceContent(resourceBase, resource) {
   return fs.readFile(join(resourceBase, resource));
 };
 
+/**
+ * Execute script resource
+ * @param {import('bpmn-elements').ExecutionScope} executionContext
+ * @param {CallableFunction} callback
+ */
 JavaScriptResource.prototype.execute = async function execute(executionContext, callback) {
   let resource;
   try {

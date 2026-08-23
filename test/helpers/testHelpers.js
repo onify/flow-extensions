@@ -6,9 +6,8 @@ import { Serializer, TypeResolver } from 'moddle-context-serializer';
 import * as Elements from 'bpmn-elements';
 import * as expressions from '@aircall/expression-parser';
 
-import { FlowScripts } from './FlowScripts.js';
-import { extensions, extendFn } from '../../src/index.js';
-import { OnifyTimerEventDefinition as TimerEventDefinition } from '../../src/OnifyTimerEventDefinition.js';
+import { extensions, extendFn, OnifyTimerEventDefinition as TimerEventDefinition } from '@onify/flow-extensions';
+import { FlowScripts } from '@onify/flow-extensions/FlowScripts';
 
 let exts;
 

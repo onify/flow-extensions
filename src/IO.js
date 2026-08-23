@@ -113,7 +113,7 @@ export class InputOutput {
   constructor(parentId, behaviour, context) {
     this.parentId = parentId;
     this.context = context;
-    const { inputParameters, outputParameters } = behaviour;
+    const { inputParameters, outputParameters } = behaviour ?? {};
     this.input = this._map(parentId, inputParameters, 'input', context);
     this.output = this._map(parentId, outputParameters, 'output', context);
   }
@@ -129,9 +129,10 @@ export class InputOutput {
   }
   _map(parentId, list, ioType, context) {
     const mapped = [];
-    if (!list) return mapped;
+    if (!Array.isArray(list)) return mapped;
 
     for (const parm of list) {
+      if (!parm) continue;
       const definition = parm.definition;
       const type = definition && definition.$type;
       switch (type) {

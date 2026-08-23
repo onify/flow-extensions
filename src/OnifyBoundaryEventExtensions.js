@@ -1,28 +1,33 @@
 import { OnifyElementExtensions } from './OnifyElementExtensions.js';
 
 export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
+  #syncFormatOnEnter;
   constructor(activity, context) {
     super(activity, context);
-    this._syncFormatOnEnter = this._syncFormatOnEnter.bind(this);
+    this.#syncFormatOnEnter = this._syncFormatOnEnter.bind(this);
   }
   activate(message) {
     const activity = this.activity;
     const formatQ = activity.broker.getQueue('format-run-q');
     const executionListeners = this.extensions.listeners;
 
-    if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
-      activity.on('start', this._syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
-    } else {
-      activity.on('enter', this._syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+    if (this._formatOnEnter) {
+      if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
+        activity.on('start', this.#syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+      } else {
+        activity.on('enter', this.#syncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+      }
     }
 
-    activity.on(
-      'activity.execution.completed',
-      (elementApi) => {
-        return this._onExecutionCompleted(elementApi, formatQ);
-      },
-      { consumerTag: '_onify-extension-on-executed' }
-    );
+    if (this._formatOnEnd) {
+      activity.on(
+        'activity.execution.completed',
+        (elementApi) => {
+          return this._onExecutionCompleted(elementApi, formatQ);
+        },
+        { consumerTag: '_onify-extension-on-executed' }
+      );
+    }
 
     if (executionListeners?.onStart) {
       activity.on(
@@ -47,6 +52,11 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
       );
     }
   }
+  /**
+   * @internal
+   * @param {import('bpmn-elements').IApi<import('bpmn-elements').Activity>} elementApi
+   * @returns {void}
+   */
   _syncFormatOnEnter(elementApi) {
     try {
       var format = this._onEnterSync(elementApi);
@@ -56,6 +66,11 @@ export class OnifyBoundaryEventExtensions extends OnifyElementExtensions {
 
     elementApi.broker.publish('format', 'run.enter.complete', format, { persistent: false });
   }
+  /**
+   * @internal
+   * @param {import('bpmn-elements').IApi<import('bpmn-elements').Activity>} elementApi
+   * @returns {void}
+   */
   _onEnterSync(elementApi) {
     const { format, properties, io } = this.extensions;
 

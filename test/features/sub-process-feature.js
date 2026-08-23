@@ -186,10 +186,12 @@ Feature('Sub process', () => {
           <task id="task" />
           <sequenceFlow id="to-sub" sourceRef="task" targetRef="sub" />
           <subProcess id="sub">
+            <documentation>sub process</documentation>
             <multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.input.collection}" camunda:elementVariable="process" />
             <task id="subtask" />
             <sequenceFlow id="to-subsub" sourceRef="subtask" targetRef="subsub" />
             <subProcess id="subsub">
+              <documentation>sub sub process</documentation>
               <multiInstanceLoopCharacteristics isSequential="true" camunda:collection="\${environment.variables.input.collection}" camunda:elementVariable="process" />
               <task id="subsubtask" />
             </subProcess>

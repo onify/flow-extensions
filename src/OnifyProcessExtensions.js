@@ -2,6 +2,10 @@ import { FormatError } from './Errors.js';
 import { getExtensions } from './getExtensions.js';
 
 export class OnifyProcessExtensions {
+  /**
+   * @param {import('bpmn-elements').Process} bp
+   * @param {import('bpmn-elements').ContextInstance} context
+   */
   constructor(bp, context) {
     this.process = bp;
     this.context = context;

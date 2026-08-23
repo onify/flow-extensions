@@ -196,7 +196,58 @@ Feature('Boundary event', () => {
         return end;
       });
 
-      And('output is as expected', async () => {
+      And('output holds property formatted on enter before stop', async () => {
+        const { output } = (await end).environment;
+        expect(output).to.deep.equal({ property: 'enter' });
+      });
+    });
+
+    Scenario('boundary event is resumed on start from state saved by previous version', () => {
+      const source = `
+      <definitions id="def_0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+        targetNamespace="http://bpmn.io/schema/bpmn">
+        <process id="boundaryformatting" isExecutable="true">
+          <userTask id="start" />
+          <sequenceFlow id="to-task" sourceRef="start" targetRef="task" />
+          <userTask id="task" />
+          <boundaryEvent id="bound" attachedToRef="task">
+            <signalEventDefinition />
+            <extensionElements>
+              <camunda:inputOutput>
+                <camunda:outputParameter name="property">\${content.properties.property1}</camunda:outputParameter>
+              </camunda:inputOutput>
+              <camunda:properties>
+                <camunda:property name="property1" value="\${content.state}" />
+              </camunda:properties>
+            </extensionElements>
+          </boundaryEvent>
+          <sequenceFlow id="to-bound-end" sourceRef="bound" targetRef="bound-end" />
+          <endEvent id="bound-end" />
+        </process>
+      </definitions>`;
+
+      let flow;
+      Given('a flow recovered with a version 9 state saved while boundary event was entered', async () => {
+        flow = await testHelpers.getOnifyFlow(source);
+        flow.recover(JSON.parse(factory.resource('v9-boundary-event-entered-state.json')));
+      });
+
+      let end;
+      When('resumed', () => {
+        end = flow.waitFor('end');
+        flow.resume();
+      });
+
+      And('boundary event is signaled', () => {
+        flow.signal();
+      });
+
+      Then('flow run completes', () => {
+        return end;
+      });
+
+      And('enter formatting was redone on redelivered start', async () => {
         const { output } = (await end).environment;
         expect(output).to.deep.equal({ property: 'start' });
       });

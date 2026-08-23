@@ -6,7 +6,24 @@ import IOForm from './IOForm.js';
 import IOProperties from './IOProperties.js';
 import ServiceExpression from './ServiceExpression.js';
 
+/**
+ * @typedef {object} OnifyExtensions assembled element extensions
+ * @property {FormatActivity | FormatProcess} [format] enter/end formatting
+ * @property {import('bpmn-elements').IActivityBehaviour} [Service] service factory
+ * @property {InputOutput} [io] camunda:InputOutput
+ * @property {{ resolve(elementApi: import('bpmn-elements').IApi<any>): any }} [properties] camunda:Properties
+ * @property {{ resolve(elementApi: import('bpmn-elements').IApi<any>): any }} [form] camunda:FormData
+ * @property {{ onStart?: boolean, onEnd?: boolean, onTake?: boolean, execute(event: string, message: any): Promise<any> }} [listeners] camunda:ExecutionListener
+ */
+
+/**
+ * Assemble extensions for an element
+ * @param {import('bpmn-elements').Activity | import('bpmn-elements').Process} element
+ * @param {import('bpmn-elements').ContextInstance} context
+ * @returns {OnifyExtensions}
+ */
 export function getExtensions(element, context) {
+  /** @type {OnifyExtensions} */
   const result = {};
 
   switch (element.type) {
@@ -26,8 +43,9 @@ export function getExtensions(element, context) {
   if (expression) result.Service = ServiceExpression;
 
   const extensions = element.behaviour.extensionElements?.values;
-  if (extensions) {
+  if (Array.isArray(extensions)) {
     for (const ext of extensions) {
+      if (!ext) continue;
       switch (ext.$type) {
         case 'camunda:Properties':
           if (ext.values?.length) result.properties = new IOProperties(element, ext);

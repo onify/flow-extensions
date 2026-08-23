@@ -1,34 +1,45 @@
 import { getExtensions } from './getExtensions.js';
 
 export class OnifyElementExtensions {
+  /**
+   * @param {import('bpmn-elements').Activity} activity
+   * @param {import('bpmn-elements').ContextInstance} context
+   */
   constructor(activity, context) {
     this.activity = activity;
     this.context = context;
     this.formatQ = activity.broker.getQueue('format-run-q');
     this._asyncFormatOnEnter = this._asyncFormatOnEnter.bind(this);
 
-    const { Service } = (this.extensions = getExtensions(activity, context));
+    const { Service, format, properties, io, form } = (this.extensions = getExtensions(activity, context));
     if (Service) {
       activity.behaviour.Service = Service;
     }
+
+    this._formatOnEnter = Boolean(format?.hasFormatting || properties || form || io?.input.length || io?.output.length);
+    this._formatOnEnd = Boolean(properties || io?.output.length || format?.resultVariable);
   }
   activate(message) {
     const activity = this.activity;
     const executionListeners = this.extensions.listeners;
 
-    if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
-      activity.on('start', this._asyncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
-    } else {
-      activity.on('enter', this._asyncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+    if (this._formatOnEnter) {
+      if (message.fields.redelivered && message.fields.routingKey === 'run.start') {
+        activity.on('start', this._asyncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+      } else {
+        activity.on('enter', this._asyncFormatOnEnter, { consumerTag: '_onify-extension-on-enter' });
+      }
     }
 
-    activity.on(
-      'activity.execution.completed',
-      (elementApi) => {
-        return this._onExecutionCompleted(elementApi);
-      },
-      { consumerTag: '_onify-extension-on-executed' }
-    );
+    if (this._formatOnEnd) {
+      activity.on(
+        'activity.execution.completed',
+        (elementApi) => {
+          return this._onExecutionCompleted(elementApi);
+        },
+        { consumerTag: '_onify-extension-on-executed' }
+      );
+    }
 
     if (executionListeners?.onStart) {
       activity.on(

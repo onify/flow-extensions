@@ -6,6 +6,12 @@ import { OnifySubProcessExtensions } from './OnifySubProcessExtensions.js';
 export { OnifySequenceFlow } from './OnifySequenceFlow.js';
 export { OnifyTimerEventDefinition } from './OnifyTimerEventDefinition.js';
 
+/**
+ * Onify flow extensions factory, pass to the engine as `extensions: { onify: extensions }`
+ * @param {import('bpmn-elements').ElementBase} element
+ * @param {import('bpmn-elements').ContextInstance} context
+ * @returns {import('bpmn-elements').IExtension}
+ */
 export function extensions(element, context) {
   switch (element.type) {
     case 'bpmn:Process':
@@ -21,14 +27,17 @@ export function extensions(element, context) {
   }
 }
 
+/**
+ * Extend function for moddle-context-serializer, registers scripts and timers at serialize time
+ * @param {import('bpmn-moddle').BaseElement & Record<string, any>} behaviour
+ * @param {import('moddle-context-serializer').ExtendContext} context
+ */
 export function extendFn(behaviour, context) {
   switch (behaviour.$type) {
     case 'bpmn:StartEvent': {
-      if (!behaviour.eventDefinitions) break;
+      if (!Array.isArray(behaviour.eventDefinitions)) break;
 
-      const timer = behaviour.eventDefinitions.find(
-        ({ type, behaviour: edBehaviour }) => edBehaviour && type === 'bpmn:TimerEventDefinition'
-      );
+      const timer = behaviour.eventDefinitions.find((ed) => ed?.behaviour && ed.type === 'bpmn:TimerEventDefinition');
       if (timer && timer.behaviour.timeCycle) Object.assign(behaviour, { scheduledStart: timer.behaviour.timeCycle });
 
       break;
@@ -50,6 +59,7 @@ export function extendFn(behaviour, context) {
 
   let listener = 0;
   for (const extension of behaviour.extensionElements.values) {
+    if (!extension) continue;
     switch (extension.$type) {
       case 'camunda:InputOutput':
         registerIOScripts(behaviour.id, context, extension.$type, extension);
@@ -67,13 +77,18 @@ export function extendFn(behaviour, context) {
 function registerIOScripts(parentId, context, type, ioBehaviour) {
   if (!ioBehaviour) return;
 
-  const { inputParameters = [], outputParameters = [] } = ioBehaviour;
-  for (const { $type, name, definition } of inputParameters.concat(outputParameters)) {
+  const { inputParameters, outputParameters } = ioBehaviour;
+  const parameters = [
+    ...(Array.isArray(inputParameters) ? inputParameters : []),
+    ...(Array.isArray(outputParameters) ? outputParameters : []),
+  ];
+  for (const parm of parameters) {
+    const definition = parm?.definition;
     if (!definition) continue;
     if (definition.$type !== 'camunda:Script') continue;
 
-    const ioType = `${type}/${$type}`;
-    const filename = `${parentId}/${ioType}/${name}`;
+    const ioType = `${type}/${parm.$type}`;
+    const filename = `${parentId}/${ioType}/${parm.name}`;
 
     context.addScript(filename, {
       id: filename,

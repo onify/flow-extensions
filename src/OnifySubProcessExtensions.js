@@ -1,42 +1,43 @@
 import { OnifyElementExtensions } from './OnifyElementExtensions.js';
 
 export class OnifySubProcessExtensions extends OnifyElementExtensions {
-  constructor(activity, context) {
-    super(activity, context);
-  }
   activate(runMessage) {
     const activity = this.activity;
     const broker = activity.broker;
     const executionListeners = this.extensions.listeners;
 
-    if (runMessage.fields.redelivered && runMessage.fields.routingKey === 'run.start') {
-      this._setupListener(
-        broker,
-        'activity.start',
-        (elementApi) => {
-          return this._asyncFormatOnEnter(elementApi);
-        },
-        '_onify-extension-on-enter'
-      );
-    } else {
-      this._setupListener(
-        broker,
-        'activity.enter',
-        (elementApi) => {
-          return this._asyncFormatOnEnter(elementApi);
-        },
-        '_onify-extension-on-enter'
-      );
+    if (this._formatOnEnter) {
+      if (runMessage.fields.redelivered && runMessage.fields.routingKey === 'run.start') {
+        this._setupListener(
+          broker,
+          'activity.start',
+          (elementApi) => {
+            return this._asyncFormatOnEnter(elementApi);
+          },
+          '_onify-extension-on-enter'
+        );
+      } else {
+        this._setupListener(
+          broker,
+          'activity.enter',
+          (elementApi) => {
+            return this._asyncFormatOnEnter(elementApi);
+          },
+          '_onify-extension-on-enter'
+        );
+      }
     }
 
-    this._setupListener(
-      broker,
-      'activity.execution.completed',
-      (elementApi) => {
-        return this._onExecutionCompleted(elementApi);
-      },
-      '_onify-extension-on-executed'
-    );
+    if (this._formatOnEnd) {
+      this._setupListener(
+        broker,
+        'activity.execution.completed',
+        (elementApi) => {
+          return this._onExecutionCompleted(elementApi);
+        },
+        '_onify-extension-on-executed'
+      );
+    }
 
     if (executionListeners?.onStart) {
       this._setupListener(

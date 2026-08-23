@@ -2,30 +2,38 @@ import { SequenceFlow } from 'bpmn-elements';
 import { getExtensions } from './getExtensions.js';
 
 export class OnifySequenceFlow extends SequenceFlow {
+  /**
+   * @param {import('bpmn-elements').SequenceFlowDefinition} flowDef
+   * @param {import('bpmn-elements').ContextInstance} context
+   */
   constructor(flowDef, context) {
     super(flowDef, context);
     this.extensions = getExtensions(this, context);
-    this._activate();
+    this.#activate();
   }
-  _activate() {
+  #activate() {
     if (!this.extensions.listeners?.onTake) return;
 
     this.broker.subscribeTmp(
       'event',
       'flow.take',
       (_, msg) => {
-        this._executeListeners(msg);
+        this.#executeListeners(msg);
       },
       { noAck: true, consumerTag: '_onify-execution-listener' }
     );
   }
-  async _executeListeners(message) {
+  async #executeListeners(message) {
     try {
       await this.extensions.listeners.execute('take', message);
     } catch (err) {
       this.logger.error(`<${this.id}> execution listener error: ${err}`);
     }
   }
+  /**
+   * @param {import('bpmn-elements').ElementBrokerMessage} fromMessage
+   * @param {(err: Error | null, result?: boolean | unknown) => void} callback
+   */
   evaluate(fromMessage, callback) {
     const properties = this.extensions.properties;
     if (!properties) return super.evaluate(fromMessage, callback);

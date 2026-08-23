@@ -2,12 +2,18 @@ import { Cron } from 'croner';
 import { TimerEventDefinition } from 'bpmn-elements';
 
 export class OnifyTimerEventDefinition extends TimerEventDefinition {
-  constructor(activity, def) {
-    super(activity, def);
-    Object.defineProperty(this, 'supports', {
-      value: ['cron', 'iso8601'],
-    });
+  /**
+   * Supported timeCycle formats
+   * @returns {string[]}
+   */
+  get supports() {
+    return ['cron', 'iso8601'];
   }
+  /**
+   * @param {import('bpmn-elements').TimerType} timerType
+   * @param {string} value
+   * @returns {import('bpmn-elements').parsedTimer}
+   */
   parse(timerType, value) {
     if (timerType === 'timeCycle') {
       try {

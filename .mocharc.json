@@ -4,5 +4,5 @@
   "reporter": "spec",
   "timeout": 3000,
   "ui": "mocha-cakes-2",
-  "require": ["./test/helpers/setup.js"]
+  "require": ["./test/helpers/setup.js", "chai/register-expect.js"]
 }

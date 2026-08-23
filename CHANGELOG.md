@@ -2,6 +2,18 @@
 
 # unreleased
 
+# v10.0.0 - 2026-08-24
+
+- defensive loading of extensions: malformed extension elements, e.g. nullish entries and non-array parameter lists, are ignored instead of throwing
+- fix package `types` field pointing to non-existing `./index.d.ts`
+- generate type declarations from source JSDoc with dts-buddy (`npm run types`), replacing the hand-written `types/index.d.ts`
+- test with bpmn-elements@18 and bpmn-engine@26
+
+## Breaking
+
+- stop publishing on activity format queue if there is nothing to format: activities without formatting extensions no longer queue formatting on enter and publish `run.enter.complete`/`run.end.complete`, hence formatting no longer pauses their run
+- bump peer dependency `bpmn-elements` to `>=17`
+
 # v9.1.1 - 2025-11-15
 
 - provenance release

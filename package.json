@@ -1,11 +1,11 @@
 {
   "name": "@onify/flow-extensions",
-  "version": "9.1.1",
+  "version": "10.0.0",
   "description": "Onify Flow extensions",
   "type": "module",
   "module": "src/index.js",
   "main": "dist/index.js",
-  "types": "./index.d.ts",
+  "types": "./types/index.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -21,10 +21,11 @@
   },
   "scripts": {
     "test": "mocha",
-    "posttest": "npm run lint && npm run dist && texample",
+    "posttest": "npm run lint && npm run types && npm run dist && texample",
     "lint": "eslint . --cache && prettier . --check --cache",
-    "prepare": "npm run dist",
+    "prepare": "npm run dist && npm run types",
     "dist": "babel src -d dist && babel test/helpers/FlowScripts.js -d dist",
+    "types": "dts-buddy types/index.d.ts -m @onify/flow-extensions:src/index.js -m @onify/flow-extensions/FlowScripts:test/helpers/FlowScripts.js",
     "test:lcov": "c8 -r lcov mocha && npm run lint",
     "cov:html": "c8 mocha && c8 report --reporter html"
   },
@@ -51,6 +52,7 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/register": "^7.23.7",
     "@eslint/js": "^10.0.1",
+    "@types/node": "^26.2.0",
     "bpmn-elements": "^18.0.1",
     "bpmn-elements-17": "npm:bpmn-elements@^17",
     "bpmn-elements-8-1": "npm:bpmn-elements@8.1",
@@ -63,13 +65,15 @@
     "chai": "^6.2.1",
     "chronokinesis": "^8.0.0",
     "debug": "^4.3.4",
+    "dts-buddy": "^0.8.3",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",
     "mocha": "^11.0.1",
     "mocha-cakes-2": "^3.3.0",
     "moddle-context-serializer": "^6.0.1",
     "prettier": "^3.2.4",
-    "texample": "^1.0.2"
+    "texample": "^1.0.2",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "@0dep/piso": ">=2",

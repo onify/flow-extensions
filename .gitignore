@@ -41,3 +41,6 @@ CLAUDE.md
 
 package-lock.json
 dist/**/*.js
+
+# Generated type declaration map
+types/*.map
