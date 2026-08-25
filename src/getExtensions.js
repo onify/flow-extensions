@@ -1,19 +1,19 @@
 import { FormatActivity, FormatProcess } from './formatters.js';
 import { InputOutput } from './IO.js';
-import Connector from './Connector.js';
-import ExecutionListeners from './ExecutionListeners.js';
-import IOForm from './IOForm.js';
-import IOProperties from './IOProperties.js';
-import ServiceExpression from './ServiceExpression.js';
+import { Connector } from './Connector.js';
+import { ExecutionListeners } from './ExecutionListeners.js';
+import { IOForm } from './IOForm.js';
+import { IOProperties } from './IOProperties.js';
+import { ServiceExpression } from './ServiceExpression.js';
 
 /**
  * @typedef {object} OnifyExtensions assembled element extensions
  * @property {FormatActivity | FormatProcess} [format] enter/end formatting
  * @property {import('bpmn-elements').IActivityBehaviour} [Service] service factory
  * @property {InputOutput} [io] camunda:InputOutput
- * @property {{ resolve(elementApi: import('bpmn-elements').IApi<any>): any }} [properties] camunda:Properties
- * @property {{ resolve(elementApi: import('bpmn-elements').IApi<any>): any }} [form] camunda:FormData
- * @property {{ onStart?: boolean, onEnd?: boolean, onTake?: boolean, execute(event: string, message: any): Promise<any> }} [listeners] camunda:ExecutionListener
+ * @property {IOProperties} [properties] camunda:Properties
+ * @property {IOForm} [form] camunda:FormData
+ * @property {ExecutionListeners} [listeners] camunda:ExecutionListener
  */
 
 /**

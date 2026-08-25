@@ -1,9 +1,17 @@
 export class IOBase {
   constructor(parm) {
+    /** @type {string} */
     this.name = parm.name;
+    /** @type {string} */
     this.type = (parm.definition && parm.definition.$type) || 'string';
+    /** @type {any} */
     this.behaviour = parm;
   }
+  /**
+   * @param {import('bpmn-elements').Activity} activity
+   * @param {import('bpmn-elements').ElementBrokerMessage} executionMessage
+   * @returns {Promise<{name: any}>}
+   */
   getValue(activity, executionMessage) {
     return {
       [this.name]: activity.environment.resolveExpression(this.behaviour.value, executionMessage),
@@ -12,9 +20,6 @@ export class IOBase {
 }
 
 class IOMap extends IOBase {
-  constructor(parm) {
-    super(parm);
-  }
   getValue(activity, executionMessage) {
     const name = this.name;
     const entries = this.behaviour.definition.entries;
@@ -110,6 +115,11 @@ export class IOScript extends IOBase {
 }
 
 export class InputOutput {
+  /**
+   * @param {string} parentId
+   * @param {any} behaviour
+   * @param {import('bpmn-elements').ContextInstance} context
+   */
   constructor(parentId, behaviour, context) {
     this.parentId = parentId;
     this.context = context;
@@ -117,16 +127,34 @@ export class InputOutput {
     this.input = this._map(parentId, inputParameters, 'input', context);
     this.output = this._map(parentId, outputParameters, 'output', context);
   }
+  /**
+   * @param {import('bpmn-elements').Activity} activity
+   * @param {import('bpmn-elements').ElementBrokerMessage} executionMessage
+   * @returns {Promise<Record<string, any>}
+   */
   async getInput(activity, executionMessage) {
     const input = this.input;
     const values = await Promise.all(input.map((parm) => parm.getValue(activity, executionMessage)));
     return values.reduce((result, parm) => Object.assign(result, parm), {});
   }
+  /**
+   * @param {import('bpmn-elements').Activity} activity
+   * @param {import('bpmn-elements').ElementBrokerMessage} executionMessage
+   * @returns {Promise<Record<string, any>}
+   */
   async getOutput(activity, executionMessage) {
     const output = this.output;
     const values = await Promise.all(output.map((parm) => parm.getValue(activity, executionMessage)));
     return values.reduce((result, parm) => Object.assign(result, parm), {});
   }
+  /**
+   * @internal
+   * @param {string} parentId parent element id
+   * @param {any[]} list list of IO behaviours
+   * @param {string} ioType type of IO
+   * @param {import('bpmn-elements').ContextInstance} context
+   * @returns {IOBase[]}
+   */
   _map(parentId, list, ioType, context) {
     const mapped = [];
     if (!Array.isArray(list)) return mapped;

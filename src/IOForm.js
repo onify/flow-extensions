@@ -1,10 +1,14 @@
-import IOProperties from './IOProperties.js';
+import { IOProperties } from './IOProperties.js';
 
-export default class IOForm {
+export class IOForm {
   constructor(activity, behaviour) {
     this.activity = activity;
     this.behaviour = behaviour;
   }
+  /**
+   * @param {import('bpmn-elements').IApi<import('bpmn-elements').Activity>} elementApi
+   * @returns {Record<string, any>}
+   */
   resolve(elementApi) {
     const form = {};
     for (const field of this.behaviour.fields) {

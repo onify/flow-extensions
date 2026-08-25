@@ -1,4 +1,9 @@
 class Listener {
+  /**
+   * @param {import('bpmn-elements').Activity | import('bpmn-elements').SequenceFlow} activity
+   * @param {import('bpmn-elements').ContextInstance} context
+   * @param {{$type:string, event:string, [x:string]: any}} extension
+   */
   constructor(activity, context, extension) {
     this.activity = activity;
     this.environment = this.activity.environment;
@@ -7,10 +12,21 @@ class Listener {
     this.type = extension.$type;
     this.event = extension.event;
   }
-  _getScope(message, extend) {
+  /**
+   * @param {import('bpmn-elements').IApi<any>} _api
+   * @returns {Promise<any>}
+   */
+  // eslint-disable-next-line no-unused-vars
+  execute(_api) {}
+  /**
+   * @internal
+   * @param {import('bpmn-elements').IApi<any>} api
+   * @param {Record<string, any>} [extend]
+   */
+  _getScope(api, extend) {
     const environment = this.environment;
 
-    const { fields, content, properties } = message;
+    const { fields, content, properties } = api;
     const scope = {
       ...extend,
       type: this.type,
@@ -29,6 +45,12 @@ class Listener {
 
     return scope;
   }
+  /**
+   * @internal
+   * @param {import('bpmn-elements').Environment} environment
+   * @param {any} scope
+   * @returns {Record<string, any>}
+   */
   _getFields(environment, scope) {
     const fields = this.extension.fields;
     if (!fields?.length) return;
@@ -41,6 +63,12 @@ class Listener {
 }
 
 class ScriptListener extends Listener {
+  /**
+   * @param {import('bpmn-elements').Activity | import('bpmn-elements').SequenceFlow} activity
+   * @param {import('bpmn-elements').ContextInstance} context
+   * @param {{script: {$type:string, [x:string]: any}, [x:string]: any}} extension
+   * @param {Number} pos execution listener position
+   */
   constructor(activity, context, extension, pos) {
     super(activity, context, extension);
     const id = (this.id = `${activity.id}/${extension.script.$type}/${this.event}/${pos}`);
@@ -85,16 +113,22 @@ class ScriptListener extends Listener {
 }
 
 class ExpressionListener extends Listener {
-  execute(message) {
-    const scope = this._getScope(message);
-    return { expression: this.environment.resolveExpression(this.extension.expression, scope) };
+  execute(api) {
+    const scope = this._getScope(api);
+    return Promise.resolve({ expression: this.environment.resolveExpression(this.extension.expression, scope) });
   }
 }
 
-export default class ExecutionListeners {
+export class ExecutionListeners {
+  /**
+   *
+   * @param {import('bpmn-elements').Activity | import('bpmn-elements').SequenceFlow} activity
+   * @param {import('bpmn-elements').ContextInstance} context
+   */
   constructor(activity, context) {
     this.activity = activity;
     this.context = context;
+    /** @type {(ScriptListener | ExpressionListener)[]} */
     this.listeners = [];
   }
   get length() {

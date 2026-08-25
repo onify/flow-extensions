@@ -74,6 +74,12 @@ export function extendFn(behaviour, context) {
   }
 }
 
+/**
+ * @param {string} parentId
+ * @param {import('bpmn-elements').ContextInstance} context
+ * @param {string} type
+ * @param {{ inputParameters?: any[], outputParameters?: any[], [x:string]: any }} ioBehaviour
+ */
 function registerIOScripts(parentId, context, type, ioBehaviour) {
   if (!ioBehaviour) return;
 
@@ -100,6 +106,13 @@ function registerIOScripts(parentId, context, type, ioBehaviour) {
   }
 }
 
+/**
+ * @param {string} parentId script parent id
+ * @param {import('bpmn-elements').ContextInstance} context
+ * @param {string} type
+ * @param {{event:string, script?: {scriptFormat:string, value?:string, resource?:string, [x:string]: any}, [x:string]: any}} listener
+ * @param {Number} pos
+ */
 function registerListenerScript(parentId, context, type, listener, pos) {
   const { event, script } = listener;
   if (!script) return;
@@ -114,6 +127,9 @@ function registerListenerScript(parentId, context, type, listener, pos) {
   });
 }
 
+/**
+ * @param {{id:string, $type:string, historyTimeToLive?:string, [x:string]: any}} behaviour
+ */
 function getHistoryTimeToLiveTimer(behaviour) {
   const { id, $type: type, historyTimeToLive } = behaviour;
 

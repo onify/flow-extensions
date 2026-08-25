@@ -1,8 +1,12 @@
-export default class IOProperties {
+export class IOProperties {
   constructor(activity, behaviour) {
     this.activity = activity;
     this.behaviour = behaviour;
   }
+  /**
+   * @param {elementApi: import('bpmn-elements').IApi<any>} elementApi
+   * @returns {Record<string, any>}
+   */
   resolve(elementApi) {
     const properties = {};
 

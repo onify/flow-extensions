@@ -37,24 +37,15 @@ declare module '@onify/flow-extensions' {
 		/**
 		 * camunda:Properties
 		 */
-		properties?: {
-			resolve(elementApi: import("bpmn-elements").IApi<any>): any;
-		} | undefined;
+		properties?: IOProperties | undefined;
 		/**
 		 * camunda:FormData
 		 */
-		form?: {
-			resolve(elementApi: import("bpmn-elements").IApi<any>): any;
-		} | undefined;
+		form?: IOForm | undefined;
 		/**
 		 * camunda:ExecutionListener
 		 */
-		listeners?: {
-			onStart?: boolean;
-			onEnd?: boolean;
-			onTake?: boolean;
-			execute(event: string, message: any): Promise<any>;
-		} | undefined;
+		listeners?: ExecutionListeners | undefined;
 	};
 	class FormatActivity {
 		
@@ -74,15 +65,120 @@ declare module '@onify/flow-extensions' {
 		
 		resolve(elementApi: import("bpmn-elements").IApi<import("bpmn-elements").Process>): any;
 	}
+	class IOBase {
+		constructor(parm: any);
+		
+		name: string;
+		
+		type: string;
+		
+		behaviour: any;
+		
+		getValue(activity: import("bpmn-elements").Activity, executionMessage: import("bpmn-elements").ElementBrokerMessage): Promise<{
+			name: any;
+		}>;
+	}
 	class InputOutput {
-		constructor(parentId: any, behaviour: any, context: any);
-		parentId: any;
-		context: any;
-		input: any[];
-		output: any[];
-		getInput(activity: any, executionMessage: any): Promise<any>;
-		getOutput(activity: any, executionMessage: any): Promise<any>;
-		_map(parentId: any, list: any, ioType: any, context: any): any[];
+		
+		constructor(parentId: string, behaviour: any, context: import("bpmn-elements").ContextInstance);
+		parentId: string;
+		context: import("bpmn-elements").ContextInstance;
+		input: IOBase[];
+		output: IOBase[];
+		
+		getInput(activity: import("bpmn-elements").Activity, executionMessage: import("bpmn-elements").ElementBrokerMessage): Promise<Record<string, any>>;
+		
+		getOutput(activity: import("bpmn-elements").Activity, executionMessage: import("bpmn-elements").ElementBrokerMessage): Promise<Record<string, any>>;
+		/**
+		 * @param parentId parent element id
+		 * @param list list of IO behaviours
+		 * @param ioType type of IO
+		 * */
+		_map(parentId: string, list: any[], ioType: string, context: import("bpmn-elements").ContextInstance): IOBase[];
+	}
+	class IOProperties {
+		constructor(activity: any, behaviour: any);
+		activity: any;
+		behaviour: any;
+		/**
+		 * @param : import('bpmn-elements').IApi<any>} elementApi
+		 * */
+		resolve(elementApi: any): Record<string, any>;
+	}
+	class IOForm {
+		constructor(activity: any, behaviour: any);
+		activity: any;
+		behaviour: any;
+		
+		resolve(elementApi: import("bpmn-elements").IApi<import("bpmn-elements").Activity>): Record<string, any>;
+	}
+	class ExecutionListeners {
+		
+		constructor(activity: import("bpmn-elements").Activity | import("bpmn-elements").SequenceFlow, context: import("bpmn-elements").ContextInstance);
+		activity: import("bpmn-elements").Activity | import("bpmn-elements").SequenceFlow;
+		context: import("bpmn-elements").ContextInstance;
+		
+		listeners: (ScriptListener | ExpressionListener)[];
+		get length(): number;
+		get onStart(): boolean;
+		get onEnd(): boolean;
+		get onTake(): boolean;
+		add(extension: any, pos: any): void;
+		execute(event: any, message: any): Promise<{}>;
+	}
+	class ScriptListener extends Listener {
+		/**
+		 * @param pos execution listener position
+		 */
+		constructor(activity: import("bpmn-elements").Activity | import("bpmn-elements").SequenceFlow, context: import("bpmn-elements").ContextInstance, extension: {
+			script: {
+				$type: string;
+				[x: string]: any;
+			};
+			[x: string]: any;
+		}, pos: number);
+		id: string;
+		execute(api: any): Promise<any>;
+		_register(context: any, id: any, script: any): void;
+	}
+	class ExpressionListener extends Listener {
+		execute(api: any): Promise<{
+			expression: any;
+		}>;
+	}
+	class Listener {
+		
+		constructor(activity: import("bpmn-elements").Activity | import("bpmn-elements").SequenceFlow, context: import("bpmn-elements").ContextInstance, extension: {
+			$type: string;
+			event: string;
+			[x: string]: any;
+		});
+		activity: import("bpmn-elements").Activity | import("bpmn-elements").SequenceFlow;
+		environment: import("bpmn-elements").Environment;
+		context: import("bpmn-elements").ContextInstance;
+		extension: {
+			[x: string]: any;
+			$type: string;
+			event: string;
+		};
+		type: string;
+		event: string;
+		
+		execute(_api: import("bpmn-elements").IApi<any>): Promise<any>;
+		
+		_getScope(api: import("bpmn-elements").IApi<any>, extend?: Record<string, any>): {
+			type: string;
+			listener: {
+				event: string;
+			};
+			fields: Required<import("smqp").MessageFields>;
+			content: import("bpmn-elements").ElementMessageContent;
+			properties: import("smqp").MessageProperties;
+			environment: import("bpmn-elements").Environment;
+			logger: import("bpmn-elements").ILogger;
+		};
+		
+		_getFields(environment: import("bpmn-elements").Environment, scope: any): Record<string, any>;
 	}
 
 	export {};

@@ -1,6 +1,6 @@
 import { NotImplemented } from './Errors.js';
 
-export default function ServiceExpression(activity) {
+export function ServiceExpression(activity) {
   if (!(this instanceof ServiceExpression)) return new ServiceExpression(activity);
   this.activity = activity;
   this.type = `${activity.type}:expression`;

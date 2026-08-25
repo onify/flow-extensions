@@ -13,6 +13,8 @@
 
 - stop publishing on activity format queue if there is nothing to format: activities without formatting extensions no longer queue formatting on enter and publish `run.enter.complete`/`run.end.complete`, hence formatting no longer pauses their run
 - bump peer dependency `bpmn-elements` to `>=17`
+- expression execution listener `execute` now returns a `Promise` resolving to `{ expression }`, in line with script execution listeners, instead of returning the resolved `{ expression }` synchronously
+- `ExecutionListeners` and `ServiceExpression` are now named exports instead of default exports of their respective modules
 
 # v9.1.1 - 2025-11-15
 

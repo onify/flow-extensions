@@ -1,6 +1,6 @@
 import { NotImplemented } from './Errors.js';
 
-export default function Connector(connectorId, io, activity, executionMessage) {
+export function Connector(connectorId, io, activity, executionMessage) {
   if (!(this instanceof Connector)) return new Connector(connectorId, io, activity, executionMessage);
   this.connectorId = connectorId;
   this.io = io;
