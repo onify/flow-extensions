@@ -2,8 +2,9 @@ declare module '@onify/flow-extensions' {
 	import type { SequenceFlow, TimerEventDefinition } from 'bpmn-elements';
 	/**
 	 * Onify flow extensions factory, pass to the engine as `extensions: { onify: extensions }`
-	 * */
-	export function extensions(element: import("bpmn-elements").ElementBase, context: import("bpmn-elements").ContextInstance): import("bpmn-elements").IExtension;
+	 * @returns undefined for an element without camunda extension data, letting bpmn-elements skip it (and e.g. attach its built-in `assignOutput` extension)
+	 */
+	export function extensions(element: import("bpmn-elements").ElementBase, context: import("bpmn-elements").ContextInstance): import("bpmn-elements").IExtension | undefined;
 	/**
 	 * Extend function for moddle-context-serializer, registers scripts and timers at serialize time
 	 * */

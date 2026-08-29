@@ -10,7 +10,7 @@ export { OnifyTimerEventDefinition } from './OnifyTimerEventDefinition.js';
  * Onify flow extensions factory, pass to the engine as `extensions: { onify: extensions }`
  * @param {import('bpmn-elements').ElementBase} element
  * @param {import('bpmn-elements').ContextInstance} context
- * @returns {import('bpmn-elements').IExtension}
+ * @returns {import('bpmn-elements').IExtension | undefined} undefined for an element without camunda extension data, letting bpmn-elements skip it (and e.g. attach its built-in `assignOutput` extension)
  */
 export function extensions(element, context) {
   switch (element.type) {
@@ -22,8 +22,11 @@ export function extensions(element, context) {
       return new OnifySubProcessExtensions(element, context);
     case 'bpmn:BoundaryEvent':
       return new OnifyBoundaryEventExtensions(element, context);
-    default:
-      return new OnifyElementExtensions(element, context);
+    default: {
+      const elementExtensions = new OnifyElementExtensions(element, context);
+      if (elementExtensions.isEmpty) return undefined;
+      return elementExtensions;
+    }
   }
 }
 

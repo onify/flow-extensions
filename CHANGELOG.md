@@ -1,13 +1,12 @@
 # Changelog
 
-# unreleased
+# v10.0.1 - 2026-08-29
+
+## Breaking
+
+- `extensions` returns `undefined` for elements without camunda extension data (no formatting, no `camunda:inputOutput`, properties, form, listeners, connector, or expression). bpmn-elements then skips the extension, and with `settings.assignOutput` (bpmn-elements >= 18.0.22) attaches its built-in output extension, so e.g. a plain user task's signal payload lands in `environment.output`
 
 # v10.0.0 - 2026-08-24
-
-- defensive loading of extensions: malformed extension elements, e.g. nullish entries and non-array parameter lists, are ignored instead of throwing
-- fix package `types` field pointing to non-existing `./index.d.ts`
-- generate type declarations from source JSDoc with dts-buddy (`npm run types`), replacing the hand-written `types/index.d.ts`
-- test with bpmn-elements@18 and bpmn-engine@26
 
 ## Breaking
 
@@ -15,6 +14,13 @@
 - bump peer dependency `bpmn-elements` to `>=17`
 - expression execution listener `execute` now returns a `Promise` resolving to `{ expression }`, in line with script execution listeners, instead of returning the resolved `{ expression }` synchronously
 - `ExecutionListeners` and `ServiceExpression` are now named exports instead of default exports of their respective modules
+
+## Fixes
+
+- defensive loading of extensions: malformed extension elements, e.g. nullish entries and non-array parameter lists, are ignored instead of throwing
+- fix package `types` field pointing to non-existing `./index.d.ts`
+- generate type declarations from source JSDoc with dts-buddy (`npm run types`), replacing the hand-written `types/index.d.ts`
+- test with bpmn-elements@18 and bpmn-engine@26
 
 # v9.1.1 - 2025-11-15
 

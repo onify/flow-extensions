@@ -19,6 +19,13 @@ export class OnifyElementExtensions {
     this._formatOnEnter = Boolean(format?.hasFormatting || properties || form || io?.input.length || io?.output.length);
     this._formatOnEnd = Boolean(properties || io?.output.length || format?.resultVariable);
   }
+  /**
+   * No camunda extension data to act on — the element runs without this extension
+   * @returns {boolean}
+   */
+  get isEmpty() {
+    return !this._formatOnEnter && !this._formatOnEnd && !this.extensions.listeners && !this.extensions.Service;
+  }
   activate(message) {
     const activity = this.activity;
     const executionListeners = this.extensions.listeners;

@@ -7,6 +7,42 @@
 - `extensions`: Flow extensions
 - `extendFn`: extend function to pass to [serializer](https://github.com/paed01/moddle-context-serializer/blob/master/API.md)
 
+## `extensions(element, context)`
+
+Pass to the engine as `extensions: { onify: extensions }`. Returns an extension for elements with camunda extension data (`camunda:inputOutput`, properties, form data, execution listeners, connector, expression, or result variable).
+
+For elements without any such data it returns `undefined`, so bpmn-elements runs them without this extension. Combined with bpmn-elements `settings.assignOutput` (`'auto'` or `'id'`, >= 18.0.22) the engine then attaches its built-in output extension, e.g. a plain user task's signal payload is assigned to `environment.output`:
+
+```javascript
+import { EventEmitter } from 'node:events';
+import { Engine } from 'bpmn-engine';
+import { extensions } from '@onify/flow-extensions';
+
+const source = `
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+  <process id="theProcess" isExecutable="true">
+    <startEvent id="start" />
+    <sequenceFlow id="to-task" sourceRef="start" targetRef="task" />
+    <userTask id="task" />
+  </process>
+</definitions>`;
+
+const listener = new EventEmitter();
+listener.once('wait', (task) => task.signal({ plain: 1 }));
+
+const engine = new Engine({
+  source,
+  listener,
+  settings: { assignOutput: 'auto' },
+  extensions: { onify: extensions },
+});
+
+engine.execute((err, instance) => {
+  if (err) throw err;
+  console.log(instance.environment.output); // { plain: 1 }
+});
+```
+
 # Examples
 
 ## Bpmn engine example
